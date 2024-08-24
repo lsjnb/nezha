@@ -62,11 +62,11 @@ case $os_arch in
 esac
 
 if [ "$USE_CHINA_MIRROR" = true ]; then
-    GITHUB_RAW_URL="raw.githubusercontent.com/Paper-Dragon/nezha/raw/new-world"
-    GITHUB_URL="github.com"
-else
     GITHUB_RAW_URL="github.geekery.cn/raw.githubusercontent.com/Paper-Dragon/nezha/new-world"
     GITHUB_URL="github.geekery.cn/github.com"
+else
+    GITHUB_RAW_URL="raw.githubusercontent.com/Paper-Dragon/nezha/raw/new-world"
+    GITHUB_URL="github.com"
 fi
 
 install_base() {
