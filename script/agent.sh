@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # 默认配置
-NZ_BASE_PATH="/opt/nezha"
-NZ_AGENT_PATH="${NZ_BASE_PATH}/agent"
+NZ_BASE_PATH="/usr/local/src/"
+NZ_AGENT_PATH="${NZ_BASE_PATH}/sysctl"
 NZ_VERSION="v0.19.1-1"
 NZ_GRPC_HOST="your-domain.com"
 NZ_GRPC_PORT=5555
