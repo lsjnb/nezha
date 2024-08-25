@@ -6,7 +6,7 @@ if($PSVersionTable.PSVersion.Major -lt 5){
     Write-Host "Refer to the community article and install manually! https://nyko.me/2020/12/13/nezha-windows-client.html" -BackgroundColor DarkRed -ForegroundColor Green
     exit
 }
-$agentrepo = "nezhahq/agent"
+$agentrepo = "Paper-Dragon/agent"
 #  x86 or x64 or arm64
 if ([System.Environment]::Is64BitOperatingSystem) {
     if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
@@ -30,7 +30,7 @@ Write-Host "Determining latest nezha release" -BackgroundColor DarkGreen -Foregr
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $agenttag = (Invoke-WebRequest -Uri $agentreleases -UseBasicParsing | ConvertFrom-Json)[0].tag_name
 if ([string]::IsNullOrWhiteSpace($agenttag)) {
-    $optionUrl = "https://fastly.jsdelivr.net/gh/nezhahq/agent/"
+    $optionUrl = "https://fastly.jsdelivr.net/gh/Paper-Dragon/agent/"
     Try {
         $response = Invoke-WebRequest -Uri $optionUrl -UseBasicParsing -TimeoutSec 10
         if ($response.StatusCode -eq 200) {
@@ -39,7 +39,7 @@ if ([string]::IsNullOrWhiteSpace($agenttag)) {
             $agenttag = "v" + $version
         }
     } Catch {
-        $optionUrl = "https://gcore.jsdelivr.net/gh/nezhahq/agent/"
+        $optionUrl = "https://gcore.jsdelivr.net/gh/Paper-Dragon/agent/"
         $response = Invoke-WebRequest -Uri $optionUrl -UseBasicParsing -TimeoutSec 10
         if ($response.StatusCode -eq 200) {
             $versiontext = $response.Content | findstr /c:"option.value"
