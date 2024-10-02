@@ -226,6 +226,9 @@ other = "Secreto"
 [Note]
 other = "Nota"
 
+[PublicNote]
+other = "Nota Pública"
+
 [LinuxOneKeyInstall]
 other = "Instalación Linux con Un Solo Clic"
 
@@ -687,3 +690,18 @@ other = "Cancelar"
 
 [FMError]
 other = "Agent devolvió un error, consulte la consola para obtener más detalles. Para abrir una nueva conexión, vuelva a abrir el FM."
+
+[Remaining]
+other = "Remaining"
+
+[Lifetime]
+other = "Lifetime"
+
+[Price]
+other = "Price"
+
+[Expired]
+other = "Expired"
+
+[Days]
+other = "d"
