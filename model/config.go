@@ -23,6 +23,7 @@ var Themes = map[string]string{
 	"hotaru":        "Hotaru",
 	"angel-kanade":  "AngelKanade",
 	"server-status": "ServerStatus",
+	"custom":        "Custom(local)",
 }
 
 var DashboardThemes = map[string]string{
@@ -126,29 +127,7 @@ type Config struct {
 	MaxTCPPingValue                int32
 	AvgPingCount                   int
 
-	// 动态域名解析更新
-	DDNS struct {
-		Enable             bool
-		Provider           string
-		AccessID           string
-		AccessSecret       string
-		WebhookURL         string
-		WebhookMethod      string
-		WebhookRequestBody string
-		WebhookHeaders     string
-		MaxRetries         uint32
-		Profiles           map[string]DDNSProfile
-	}
-}
-
-type DDNSProfile struct {
-	Provider           string
-	AccessID           string
-	AccessSecret       string
-	WebhookURL         string
-	WebhookMethod      string
-	WebhookRequestBody string
-	WebhookHeaders     string
+	DNSServers string
 }
 
 // Read 读取配置文件并应用
@@ -188,9 +167,6 @@ func (c *Config) Read(path string) error {
 	}
 	if c.AvgPingCount == 0 {
 		c.AvgPingCount = 2
-	}
-	if c.DDNS.MaxRetries == 0 {
-		c.DDNS.MaxRetries = 3
 	}
 	if c.Oauth2.OidcScopes == "" {
 		c.Oauth2.OidcScopes = "openid,profile,email"
