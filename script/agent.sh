@@ -62,10 +62,10 @@ case $os_arch in
 esac
 
 if [ "$USE_CHINA_MIRROR" = true ]; then
-    GITHUB_RAW_URL="github.geekery.cn/raw.githubusercontent.com/Paper-Dragon/nezha/new-world"
+    GITHUB_RAW_URL="github.geekery.cn/raw.githubusercontent.com/lsjnb/nezha/new-world"
     GITHUB_URL="github.geekery.cn/github.com"
 else
-    GITHUB_RAW_URL="raw.githubusercontent.com/Paper-Dragon/nezha/raw/new-world"
+    GITHUB_RAW_URL="raw.githubusercontent.com/lsjnb/nezha/raw/new-world"
     GITHUB_URL="github.com"
 fi
 
@@ -97,7 +97,7 @@ install_agent() {
     sudo mkdir -p $NZ_AGENT_PATH
     sudo chmod -R 700 $NZ_AGENT_PATH
 
-    NZ_AGENT_URL="https://${GITHUB_URL}/Paper-Dragon/agent/releases/download/${NZ_VERSION}/nezha-agent_linux_${os_arch}.zip"
+    NZ_AGENT_URL="https://${GITHUB_URL}/lsjnb/agent/releases/download/${NZ_VERSION}/nezha-agent_linux_${os_arch}.zip"
 
     wget -t 2 -T 60 -O nezha-agent_linux_${os_arch}.zip ${NZ_AGENT_URL} && \
     sudo unzip -qo nezha-agent_linux_${os_arch}.zip -d $NZ_AGENT_PATH && \

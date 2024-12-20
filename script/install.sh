@@ -71,17 +71,17 @@ fi
 if [ "$is_v1" = true ]; then
     echo "将使用 v1 面板安装脚本..."
     if [ "$USE_CN_MIRROR" = true ]; then
-        shell_url="https://gitee.com/naibahq/scripts/raw/main/install.sh"
+        shell_url="https://github.geekery.cn/https://raw.githubusercontent.com/lsjnb/scripts/main/install.sh"
     else
-        shell_url="https://raw.githubusercontent.com/nezhahq/scripts/main/install.sh"
+        shell_url="https://raw.githubusercontent.com/lsjnb/scripts/main/install.sh"
     fi
     file_name="nezha.sh"
 else
     echo "将使用 v0 面板安装脚本，脚本将会下载为nezha_v0.sh"
     if [ "$USE_CN_MIRROR" = true ]; then
-        shell_url="https://gitee.com/naibahq/scripts/raw/v0/install.sh"
+        shell_url="https://github.geekery.cn/https://raw.githubusercontent.com/lsjnb/scripts/refs/heads/v0/install.sh"
     else
-        shell_url="https://raw.githubusercontent.com/nezhahq/scripts/refs/heads/v0/install.sh"
+        shell_url="https://raw.githubusercontent.com/lsjnb/scripts/refs/heads/v0/install.sh"
     fi
     file_name="nezha_v0.sh"
 fi
