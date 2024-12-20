@@ -1,4 +1,4 @@
-module github.com/nezhahq/nezha
+module github.com/lsjnb/nezha
 
 go 1.22.7
 
