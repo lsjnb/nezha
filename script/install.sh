@@ -71,9 +71,9 @@ fi
 if [ "$is_v1" = true ]; then
     echo "将使用 v1 面板安装脚本..."
     if [ "$USE_CN_MIRROR" = true ]; then
-        shell_url="https://github.geekery.cn/https://raw.githubusercontent.com/lsjnb/scripts/main/install.sh"
+        shell_url="https://github.geekery.cn/https://raw.githubusercontent.com/lsjnb/scripts/new-world/install.sh"
     else
-        shell_url="https://raw.githubusercontent.com/lsjnb/scripts/main/install.sh"
+        shell_url="https://raw.githubusercontent.com/lsjnb/scripts/new-world/install.sh"
     fi
     file_name="nezha.sh"
 else
