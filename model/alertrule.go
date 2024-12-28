@@ -62,12 +62,8 @@ func (r *AlertRule) Enabled() bool {
 }
 
 // Snapshot 对传入的Server进行该报警规则下所有type的检查 返回每项检查结果
-func (r *AlertRule) Snapshot(cycleTransferStats *CycleTransferStats, server *Server, db *gorm.DB, role uint8) []bool {
+func (r *AlertRule) Snapshot(cycleTransferStats *CycleTransferStats, server *Server, db *gorm.DB) []bool {
 	point := make([]bool, len(r.Rules))
-
-	if r.UserID != server.UserID && role != RoleAdmin {
-		return point
-	}
 
 	for i, rule := range r.Rules {
 		point[i] = rule.Snapshot(cycleTransferStats, server, db)
@@ -79,17 +75,15 @@ func (r *AlertRule) Snapshot(cycleTransferStats *CycleTransferStats, server *Ser
 func (r *AlertRule) Check(points [][]bool) (maxDuration int, passed bool) {
 	failCount := 0 // 检查未通过的个数
 
-	for i, rule := range r.Rules {
+	for ruleId, rule := range r.Rules {
 		if rule.IsTransferDurationRule() {
 			// 循环区间流量报警
 			if maxDuration < 1 {
 				maxDuration = 1
 			}
-			for j := len(points[i]) - 1; j >= 0; j-- {
-				if !points[i][j] {
-					failCount++
-					break
-				}
+			if len(points) > 0 && !points[len(points)-1][ruleId] {
+				failCount++
+				break
 			}
 		} else {
 			// 常规报警
@@ -100,11 +94,10 @@ func (r *AlertRule) Check(points [][]bool) (maxDuration int, passed bool) {
 			if len(points) < duration {
 				continue
 			}
-
 			total, fail := 0.0, 0.0
-			for j := len(points) - duration; j < len(points); j++ {
+			for timeTick := len(points) - duration; timeTick < len(points); timeTick++ {
 				total++
-				if !points[j][i] {
+				if !points[timeTick][ruleId] {
 					fail++
 				}
 			}
