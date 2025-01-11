@@ -103,20 +103,20 @@ func (s *NezhaHandler) ReportSystemState(stream pb.NezhaService_ReportSystemStat
 		state := model.PB2State(state)
 
 		singleton.ServerLock.RLock()
+		server, ok := singleton.ServerList[clientID]
+		singleton.ServerLock.RUnlock()
 
-		if singleton.ServerList[clientID] == nil {
-			singleton.ServerLock.RUnlock()
+		if !ok || server == nil {
 			return nil
 		}
 
-		singleton.ServerList[clientID].LastActive = time.Now()
-		singleton.ServerList[clientID].State = &state
+		server.LastActive = time.Now()
+		server.State = &state
 		// 应对 dashboard 重启的情况，如果从未记录过，先打点，等到小时时间点时入库
-		if singleton.ServerList[clientID].PrevTransferInSnapshot == 0 || singleton.ServerList[clientID].PrevTransferOutSnapshot == 0 {
-			singleton.ServerList[clientID].PrevTransferInSnapshot = int64(state.NetInTransfer)
-			singleton.ServerList[clientID].PrevTransferOutSnapshot = int64(state.NetOutTransfer)
+		if server.PrevTransferInSnapshot == 0 || server.PrevTransferOutSnapshot == 0 {
+			server.PrevTransferInSnapshot = int64(state.NetInTransfer)
+			server.PrevTransferOutSnapshot = int64(state.NetOutTransfer)
 		}
-		singleton.ServerLock.RUnlock()
 
 		stream.Send(&pb.Receipt{Proced: true})
 	}
@@ -129,20 +129,26 @@ func (s *NezhaHandler) onReportSystemInfo(c context.Context, r *pb.Host) error {
 		return err
 	}
 	host := model.PB2Host(r)
+
 	singleton.ServerLock.RLock()
 	defer singleton.ServerLock.RUnlock()
+
+	server, ok := singleton.ServerList[clientID]
+	if !ok || server == nil {
+		return fmt.Errorf("server not found")
+	}
 
 	/**
 	 * 这里的 singleton 中的数据都是关机前的旧数据
 	 * 当 agent 重启时，bootTime 变大，agent 端会先上报 host 信息，然后上报 state 信息
 	 * 这是可以借助上报顺序的空档，将停机前的流量统计数据标记下来，加到下一个小时的数据点上
 	 */
-	if singleton.ServerList[clientID].Host != nil && singleton.ServerList[clientID].Host.BootTime < host.BootTime {
-		singleton.ServerList[clientID].PrevTransferInSnapshot = singleton.ServerList[clientID].PrevTransferInSnapshot - int64(singleton.ServerList[clientID].State.NetInTransfer)
-		singleton.ServerList[clientID].PrevTransferOutSnapshot = singleton.ServerList[clientID].PrevTransferOutSnapshot - int64(singleton.ServerList[clientID].State.NetOutTransfer)
+	if server.Host != nil && server.Host.BootTime < host.BootTime {
+		server.PrevTransferInSnapshot = server.PrevTransferInSnapshot - int64(server.State.NetInTransfer)
+		server.PrevTransferOutSnapshot = server.PrevTransferOutSnapshot - int64(server.State.NetOutTransfer)
 	}
 
-	singleton.ServerList[clientID].Host = &host
+	server.Host = &host
 	return nil
 }
 
@@ -214,12 +220,18 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 	joinedIP := geoip.IP.Join()
 
 	singleton.ServerLock.RLock()
+	server, ok := singleton.ServerList[clientID]
+	singleton.ServerLock.RUnlock()
+	if !ok || server == nil {
+		return nil, fmt.Errorf("server not found")
+	}
+
 	// 检查并更新DDNS
-	if singleton.ServerList[clientID].EnableDDNS && joinedIP != "" &&
-		(singleton.ServerList[clientID].GeoIP == nil || singleton.ServerList[clientID].GeoIP.IP != geoip.IP) {
+	if server.EnableDDNS && joinedIP != "" &&
+		(server.GeoIP == nil || server.GeoIP.IP != geoip.IP) {
 		ipv4 := geoip.IP.IPv4Addr
 		ipv6 := geoip.IP.IPv6Addr
-		providers, err := singleton.GetDDNSProvidersFromProfiles(singleton.ServerList[clientID].DDNSProfiles, &ddns.IP{Ipv4Addr: ipv4, Ipv6Addr: ipv6})
+		providers, err := singleton.GetDDNSProvidersFromProfiles(server.DDNSProfiles, &ddns.IP{Ipv4Addr: ipv4, Ipv6Addr: ipv6})
 		if err == nil {
 			for _, provider := range providers {
 				go func(provider *ddns.Provider) {
@@ -232,23 +244,22 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 	}
 
 	// 发送IP变动通知
-	if singleton.ServerList[clientID].GeoIP != nil && singleton.Conf.EnableIPChangeNotification &&
+	if server.GeoIP != nil && singleton.Conf.EnableIPChangeNotification &&
 		((singleton.Conf.Cover == model.ConfigCoverAll && !singleton.Conf.IgnoredIPNotificationServerIDs[clientID]) ||
 			(singleton.Conf.Cover == model.ConfigCoverIgnoreAll && singleton.Conf.IgnoredIPNotificationServerIDs[clientID])) &&
-		singleton.ServerList[clientID].GeoIP.IP.Join() != "" &&
+		server.GeoIP.IP.Join() != "" &&
 		joinedIP != "" &&
-		singleton.ServerList[clientID].GeoIP.IP != geoip.IP {
+		server.GeoIP.IP != geoip.IP {
 
 		singleton.SendNotification(singleton.Conf.IPChangeNotificationGroupID,
 			fmt.Sprintf(
 				"[%s] %s, %s => %s",
 				singleton.Localizer.T("IP Changed"),
-				singleton.ServerList[clientID].Name, singleton.IPDesensitize(singleton.ServerList[clientID].GeoIP.IP.Join()),
+				server.Name, singleton.IPDesensitize(server.GeoIP.IP.Join()),
 				singleton.IPDesensitize(joinedIP),
 			),
 			nil)
 	}
-	singleton.ServerLock.RUnlock()
 
 	// 根据内置数据库查询 IP 地理位置
 	var ip string
@@ -266,9 +277,7 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 	geoip.CountryCode = location
 
 	// 将地区码写入到 Host
-	singleton.ServerLock.Lock()
-	defer singleton.ServerLock.Unlock()
-	singleton.ServerList[clientID].GeoIP = &geoip
+	server.GeoIP = &geoip
 
 	return &pb.GeoIP{Ip: nil, CountryCode: location}, nil
 }

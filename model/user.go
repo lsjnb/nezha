@@ -15,10 +15,11 @@ const (
 
 type User struct {
 	Common
-	Username    string `json:"username,omitempty" gorm:"uniqueIndex"`
-	Password    string `json:"password,omitempty" gorm:"type:char(72)"`
-	Role        uint8  `json:"role,omitempty"`
-	AgentSecret string `json:"agent_secret,omitempty" gorm:"type:char(32)"`
+	Username       string `json:"username,omitempty" gorm:"uniqueIndex"`
+	Password       string `json:"password,omitempty" gorm:"type:char(72)"`
+	Role           uint8  `json:"role,omitempty"`
+	AgentSecret    string `json:"agent_secret,omitempty" gorm:"type:char(32)"`
+	RejectPassword bool   `json:"reject_password,omitempty"`
 }
 
 type UserInfo struct {
@@ -42,7 +43,8 @@ func (u *User) BeforeSave(tx *gorm.DB) error {
 
 type Profile struct {
 	User
-	LoginIP string `json:"login_ip,omitempty"`
+	LoginIP    string            `json:"login_ip,omitempty"`
+	Oauth2Bind map[string]string `json:"oauth2_bind,omitempty"`
 }
 
 type OnlineUser struct {
