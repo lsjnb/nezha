@@ -16,7 +16,7 @@ var Localizer *i18n.Localizer
 
 func initI18n() {
 	if err := loadTranslation(); err != nil {
-		log.Printf("NEZHA>> init i18n failed: %v", err)
+		log.Printf("sysctl>> init i18n failed: %v", err)
 	}
 }
 

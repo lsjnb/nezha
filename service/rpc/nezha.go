@@ -51,7 +51,7 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 	for {
 		result, err = stream.Recv()
 		if err != nil {
-			log.Printf("NEZHA>> RequestTask error: %v, clientID: %d\n", err, clientID)
+			log.Printf("sysctl>> RequestTask error: %v, clientID: %d\n", err, clientID)
 			return nil
 		}
 		if result.GetType() == model.TaskTypeCommand {
@@ -97,7 +97,7 @@ func (s *NezhaHandler) ReportSystemState(stream pb.NezhaService_ReportSystemStat
 	for {
 		state, err = stream.Recv()
 		if err != nil {
-			log.Printf("NEZHA>> ReportSystemState eror: %v, clientID: %d\n", err, clientID)
+			log.Printf("sysctl>> ReportSystemState eror: %v, clientID: %d\n", err, clientID)
 			return nil
 		}
 		state := model.PB2State(state)
@@ -179,7 +179,7 @@ func (s *NezhaHandler) IOStream(stream pb.NezhaService_IOStreamServer) error {
 	go func() {
 		for {
 			if err := stream.Send(&pb.IOStreamData{Data: []byte{}}); err != nil {
-				log.Printf("NEZHA>> IOStream keepAlive error: %v\n", err)
+				log.Printf("sysctl>> IOStream keepAlive error: %v\n", err)
 				return
 			}
 			time.Sleep(time.Second * 30)
@@ -239,7 +239,7 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 				}(provider)
 			}
 		} else {
-			log.Printf("NEZHA>> 获取DDNS配置时发生错误: %v", err)
+			log.Printf("sysctl>> Failed to retrieve DDNS configuration: %v", err)
 		}
 	}
 
@@ -272,7 +272,7 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 	netIP := net.ParseIP(ip)
 	location, err := geoipx.Lookup(netIP)
 	if err != nil {
-		log.Printf("NEZHA>> geoip.Lookup: %v", err)
+		log.Printf("sysctl>> geoip.Lookup: %v", err)
 	}
 	geoip.CountryCode = location
 

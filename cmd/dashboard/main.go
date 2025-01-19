@@ -131,15 +131,15 @@ func main() {
 	muxServer := &http.Server{Handler: h2c.NewHandler(muxHandler, http2Server), ReadHeaderTimeout: time.Second * 5}
 
 	if err := graceful.Graceful(func() error {
-		log.Printf("NEZHA>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.ListenPort)
+		log.Printf("sysctl>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.ListenPort)
 		return muxServer.Serve(l)
 	}, func(c context.Context) error {
-		log.Println("NEZHA>> Graceful::START")
+		log.Println("sysctl>> Graceful::START")
 		singleton.RecordTransferHourlyUsage()
-		log.Println("NEZHA>> Graceful::END")
+		log.Println("sysctl>> Graceful::END")
 		return muxServer.Shutdown(c)
 	}); err != nil {
-		log.Printf("NEZHA>> ERROR: %v", err)
+		log.Printf("sysctl>> ERROR: %v", err)
 	}
 }
 

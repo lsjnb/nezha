@@ -2,15 +2,20 @@
   name: "OfficialAdmin"
   repository: "https://github.com/lsjnb/admin-frontend"
   author: "lsjnb"
-  version: "v1.5.12-0"
+  version: "v1.5.13-0"
   isadmin: true
   isofficial: true
 - path: "user-dist"
   name: "Official"
   repository: "https://github.com/hamster1963/nezha-dash-v1"
   author: "hamster1963"
-  version: "v1.12.5"
+  version: "v1.13.0"
   isofficial: true
+- path: "nezha-ascii-dist"
+  name: "Nezha-ASCII"
+  repository: "https://github.com/hamster1963/nezha-ascii"
+  author: "hamster1963"
+  version: "v1.0.0"
 - path: "nazhua-dist"
   name: "Nazhua"
   repository: "https://github.com/hi2shark/nazhua"

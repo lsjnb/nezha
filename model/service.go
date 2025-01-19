@@ -110,7 +110,7 @@ func (m *Service) BeforeSave(tx *gorm.DB) error {
 func (m *Service) AfterFind(tx *gorm.DB) error {
 	m.SkipServers = make(map[uint64]bool)
 	if err := utils.Json.Unmarshal([]byte(m.SkipServersRaw), &m.SkipServers); err != nil {
-		log.Println("NEZHA>> Service.AfterFind:", err)
+		log.Println("sysctl>> Service.AfterFind:", err)
 		return nil
 	}
 

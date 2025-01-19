@@ -35,7 +35,7 @@ func ServeWeb(frontendDist fs.FS) http.Handler {
 		pprof.Register(r)
 	}
 	if singleton.Conf.Debug {
-		log.Printf("NEZHA>> Swagger(%s) UI available at http://localhost:%d/swagger/index.html", docs.SwaggerInfo.Version, singleton.Conf.ListenPort)
+		log.Printf("sysctl>> Swagger(%s) UI available at http://localhost:%d/swagger/index.html", docs.SwaggerInfo.Version, singleton.Conf.ListenPort)
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
@@ -233,13 +233,13 @@ func handle[T any](c *gin.Context, handler handlerFunc[T]) {
 	}
 	switch err.(type) {
 	case *gormError:
-		log.Printf("NEZHA>> gorm error: %v", err)
+		log.Printf("sysctl>> gorm error: %v", err)
 		c.JSON(http.StatusOK, newErrorResponse(singleton.Localizer.ErrorT("database error")))
 		return
 	case *wsError:
 		// Connection is upgraded to WebSocket, so c.Writer is no longer usable
 		if msg := err.Error(); msg != "" {
-			log.Printf("NEZHA>> websocket error: %v", err)
+			log.Printf("sysctl>> websocket error: %v", err)
 		}
 		return
 	default:
