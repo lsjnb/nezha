@@ -60,7 +60,15 @@ func routers(r *gin.Engine, frontendDist fs.FS) {
 	api.POST("/login", authMiddleware.LoginHandler)
 	api.GET("/oauth2/:provider", commonHandler(oauth2redirect))
 
-	optionalAuth := api.Group("", optionalAuthMiddleware(authMiddleware))
+	fallbackAuthMw := fallbackAuthMiddleware(authMiddleware)
+	fallbackAuth := api.Group("", fallbackAuthMw)
+	fallbackAuth.GET("/setting", commonHandler(listConfig))
+	fallbackAuth.GET("/oauth2/callback", commonHandler(oauth2callback(authMiddleware)))
+
+	authMw := authMiddleware.MiddlewareFunc()
+	optionalAuthMw := utils.IfOr(singleton.Conf.ForceAuth, authMw, fallbackAuthMw)
+
+	optionalAuth := api.Group("", optionalAuthMw)
 	optionalAuth.GET("/ws/server", commonHandler(serverStream))
 	optionalAuth.GET("/server-group", commonHandler(listServerGroup))
 
@@ -68,11 +76,7 @@ func routers(r *gin.Engine, frontendDist fs.FS) {
 	optionalAuth.GET("/service/:id", commonHandler(listServiceHistory))
 	optionalAuth.GET("/service/server", commonHandler(listServerWithServices))
 
-	optionalAuth.GET("/oauth2/callback", commonHandler(oauth2callback(authMiddleware)))
-
-	optionalAuth.GET("/setting", commonHandler(listConfig))
-
-	auth := api.Group("", authMiddleware.MiddlewareFunc())
+	auth := api.Group("", authMw)
 
 	auth.GET("/refresh-token", authMiddleware.RefreshHandler)
 
@@ -106,6 +110,8 @@ func routers(r *gin.Engine, frontendDist fs.FS) {
 
 	auth.GET("/server", listHandler(listServer))
 	auth.PATCH("/server/:id", commonHandler(updateServer))
+	auth.GET("/server/:id/config", commonHandler(getServerConfig))
+	auth.POST("/server/:id/config", commonHandler(setServerConfig))
 	auth.POST("/batch-delete/server", commonHandler(batchDeleteServer))
 	auth.POST("/force-update/server", commonHandler(forceUpdateServer))
 

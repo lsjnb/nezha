@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -54,7 +55,8 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 			log.Printf("sysctl>> RequestTask error: %v, clientID: %d\n", err, clientID)
 			return nil
 		}
-		if result.GetType() == model.TaskTypeCommand {
+		switch result.GetType() {
+		case model.TaskTypeCommand:
 			// 处理上报的计划任务
 			singleton.CronLock.RLock()
 			cr := singleton.Crons[result.GetId()]
@@ -78,11 +80,24 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 					LastResult:     result.GetSuccessful(),
 				})
 			}
-		} else if model.IsServiceSentinelNeeded(result.GetType()) {
-			singleton.ServiceSentinelShared.Dispatch(singleton.ReportData{
-				Data:     result,
-				Reporter: clientID,
-			})
+		case model.TaskTypeReportConfig:
+			singleton.ServerLock.RLock()
+			if len(singleton.ServerList[clientID].ConfigCache) < 1 {
+				if !result.GetSuccessful() {
+					singleton.ServerList[clientID].ConfigCache <- errors.New(result.Data)
+					singleton.ServerLock.RUnlock()
+					continue
+				}
+				singleton.ServerList[clientID].ConfigCache <- result.Data
+			}
+			singleton.ServerLock.RUnlock()
+		default:
+			if model.IsServiceSentinelNeeded(result.GetType()) {
+				singleton.ServiceSentinelShared.Dispatch(singleton.ReportData{
+					Data:     result,
+					Reporter: clientID,
+				})
+			}
 		}
 	}
 }
@@ -231,11 +246,13 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 		(server.GeoIP == nil || server.GeoIP.IP != geoip.IP) {
 		ipv4 := geoip.IP.IPv4Addr
 		ipv6 := geoip.IP.IPv6Addr
+
 		providers, err := singleton.GetDDNSProvidersFromProfiles(server.DDNSProfiles, &ddns.IP{Ipv4Addr: ipv4, Ipv6Addr: ipv6})
 		if err == nil {
 			for _, provider := range providers {
+				domains := server.OverrideDDNSDomains[provider.GetProfileID()]
 				go func(provider *ddns.Provider) {
-					provider.UpdateDomain(context.Background())
+					provider.UpdateDomain(context.Background(), domains...)
 				}(provider)
 			}
 		} else {

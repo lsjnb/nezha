@@ -24,6 +24,8 @@ const (
 	TaskTypeNAT
 	TaskTypeReportHostInfoDeprecated
 	TaskTypeFM
+	TaskTypeReportConfig
+	TaskTypeApplyConfig
 )
 
 type TerminalTask struct {
@@ -110,7 +112,7 @@ func (m *Service) BeforeSave(tx *gorm.DB) error {
 func (m *Service) AfterFind(tx *gorm.DB) error {
 	m.SkipServers = make(map[uint64]bool)
 	if err := utils.Json.Unmarshal([]byte(m.SkipServersRaw), &m.SkipServers); err != nil {
-		log.Println("sysctl>> Service.AfterFind:", err)
+		log.Println("NEZHA>> Service.AfterFind:", err)
 		return nil
 	}
 
@@ -127,5 +129,12 @@ func (m *Service) AfterFind(tx *gorm.DB) error {
 
 // IsServiceSentinelNeeded 判断该任务类型是否需要进行服务监控 需要则返回true
 func IsServiceSentinelNeeded(t uint64) bool {
-	return t != TaskTypeCommand && t != TaskTypeTerminalGRPC && t != TaskTypeUpgrade && t != TaskTypeKeepalive
+	switch t {
+	case TaskTypeCommand, TaskTypeTerminalGRPC, TaskTypeUpgrade,
+		TaskTypeKeepalive, TaskTypeNAT, TaskTypeFM,
+		TaskTypeReportConfig, TaskTypeApplyConfig:
+		return false
+	default:
+		return true
+	}
 }
