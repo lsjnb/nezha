@@ -2,7 +2,7 @@
   name: "OfficialAdmin"
   repository: "https://github.com/lsjnb/admin-frontend"
   author: "lsjnb"
-  version: "v1.7.0"
+  version: "v1.7.0-1"
   isadmin: true
   isofficial: true
 - path: "user-dist"
