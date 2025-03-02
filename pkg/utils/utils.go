@@ -1,36 +1,31 @@
 package utils
 
 import (
+	"cmp"
 	"crypto/rand"
 	"errors"
 	"iter"
 	"maps"
 	"math/big"
 	"net/netip"
-	"os"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 
 	"golang.org/x/exp/constraints"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 var (
-	Json = jsoniter.ConfigCompatibleWithStandardLibrary
+	DNSServers = []string{"8.8.8.8:53", "8.8.4.4:53", "1.1.1.1:53", "1.0.0.1:53"}
 
-	DNSServers = []string{"1.1.1.1:53", "223.5.5.5:53"}
+	ipv4Re = regexp.MustCompile(`(\d*\.).*(\.\d*)`)
+	ipv6Re = regexp.MustCompile(`(\w*:\w*:).*(:\w*:\w*)`)
 )
-
-var ipv4Re = regexp.MustCompile(`(\d*\.).*(\.\d*)`)
 
 func ipv4Desensitize(ipv4Addr string) string {
 	return ipv4Re.ReplaceAllString(ipv4Addr, "$1****$2")
 }
-
-var ipv6Re = regexp.MustCompile(`(\w*:\w*:).*(:\w*:\w*)`)
 
 func ipv6Desensitize(ipv6Addr string) string {
 	return ipv6Re.ReplaceAllString(ipv6Addr, "$1****$2")
@@ -52,9 +47,11 @@ func IPStringToBinary(ip string) ([]byte, error) {
 }
 
 func BinaryToIPString(b []byte) string {
-	var addr16 [16]byte
-	copy(addr16[:], b)
-	addr := netip.AddrFrom16(addr16)
+	if len(b) < 16 {
+		return "::"
+	}
+
+	addr := netip.AddrFrom16([16]byte(b))
 	return addr.Unmap().String()
 }
 
@@ -71,40 +68,11 @@ func GetIPFromHeader(headerValue string) (string, error) {
 	return ip.String(), nil
 }
 
-// SplitIPAddr 传入/分割的v4v6混合地址，返回v4和v6地址与有效地址
-func SplitIPAddr(v4v6Bundle string) (string, string, string) {
-	ipList := strings.Split(v4v6Bundle, "/")
-	ipv4 := ""
-	ipv6 := ""
-	validIP := ""
-	if len(ipList) > 1 {
-		// 双栈
-		ipv4 = ipList[0]
-		ipv6 = ipList[1]
-		validIP = ipv4
-	} else if len(ipList) == 1 {
-		// 仅ipv4|ipv6
-		if strings.Contains(ipList[0], ":") {
-			ipv6 = ipList[0]
-			validIP = ipv6
-		} else {
-			ipv4 = ipList[0]
-			validIP = ipv4
-		}
-	}
-	return ipv4, ipv6, validIP
-}
-
-func IsFileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
 func GenerateRandomString(n int) (string, error) {
 	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	lettersLength := big.NewInt(int64(len(letters)))
 	ret := make([]byte, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		num, err := rand.Int(rand.Reader, lettersLength)
 		if err != nil {
 			return "", err
@@ -131,13 +99,6 @@ func IfOr[T any](a bool, x, y T) T {
 	return y
 }
 
-func IfOrFn[T any](a bool, x, y func() T) T {
-	if a {
-		return x()
-	}
-	return y()
-}
-
 func Itoa[T constraints.Integer](i T) string {
 	switch any(i).(type) {
 	case int, int8, int16, int32, int64:
@@ -154,22 +115,35 @@ func MapValuesToSlice[Map ~map[K]V, K comparable, V any](m Map) []V {
 	return slices.AppendSeq(s, maps.Values(m))
 }
 
-func Unique[T comparable](s []T) []T {
-	m := make(map[T]struct{})
-	ret := make([]T, 0, len(s))
-	for _, v := range s {
-		if _, ok := m[v]; !ok {
-			m[v] = struct{}{}
-			ret = append(ret, v)
-		}
-	}
-	return ret
+func MapKeysToSlice[Map ~map[K]V, K comparable, V any](m Map) []K {
+	s := make([]K, 0, len(m))
+	return slices.AppendSeq(s, maps.Keys(m))
 }
 
-func ConvertSeq[T, U any](seq iter.Seq[T], f func(e T) U) iter.Seq[U] {
-	return func(yield func(U) bool) {
-		for e := range seq {
-			if !yield(f(e)) {
+func Unique[S ~[]E, E cmp.Ordered](list S) S {
+	if list == nil {
+		return nil
+	}
+	out := make([]E, len(list))
+	copy(out, list)
+	slices.Sort(out)
+	return slices.Compact(out)
+}
+
+func ConvertSeq[In, Out any](seq iter.Seq[In], f func(In) Out) iter.Seq[Out] {
+	return func(yield func(Out) bool) {
+		for in := range seq {
+			if !yield(f(in)) {
+				return
+			}
+		}
+	}
+}
+
+func ConvertSeq2[KIn, VIn, KOut, VOut any](seq iter.Seq2[KIn, VIn], f func(KIn, VIn) (KOut, VOut)) iter.Seq2[KOut, VOut] {
+	return func(yield func(KOut, VOut) bool) {
+		for k, v := range seq {
+			if !yield(f(k, v)) {
 				return
 			}
 		}

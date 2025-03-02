@@ -1,15 +1,17 @@
 package controller
 
 import (
+	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 
 	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
 	pb "github.com/nezhahq/nezha/proto"
 	"github.com/nezhahq/nezha/service/singleton"
 )
@@ -25,11 +27,10 @@ import (
 // @Success 200 {object} model.CommonResponse[[]model.Server]
 // @Router /server [get]
 func listServer(c *gin.Context) ([]*model.Server, error) {
-	singleton.SortedServerLock.RLock()
-	defer singleton.SortedServerLock.RUnlock()
+	slist := singleton.ServerShared.GetSortedList()
 
 	var ssl []*model.Server
-	if err := copier.Copy(&ssl, &singleton.SortedServerList); err != nil {
+	if err := copier.Copy(&ssl, &slist); err != nil {
 		return nil, err
 	}
 	return ssl, nil
@@ -58,16 +59,9 @@ func updateServer(c *gin.Context) (any, error) {
 		return nil, err
 	}
 
-	singleton.DDNSCacheLock.RLock()
-	for _, pid := range sf.DDNSProfiles {
-		if p, ok := singleton.DDNSCache[pid]; ok {
-			if !p.HasPermission(c) {
-				singleton.DDNSCacheLock.RUnlock()
-				return nil, singleton.Localizer.ErrorT("permission denied")
-			}
-		}
+	if !singleton.DDNSShared.CheckPermission(c, slices.Values(sf.DDNSProfiles)) {
+		return nil, singleton.Localizer.ErrorT("permission denied")
 	}
-	singleton.DDNSCacheLock.RUnlock()
 
 	var s model.Server
 	if err := singleton.DB.First(&s, id).Error; err != nil {
@@ -87,13 +81,13 @@ func updateServer(c *gin.Context) (any, error) {
 	s.DDNSProfiles = sf.DDNSProfiles
 	s.OverrideDDNSDomains = sf.OverrideDDNSDomains
 
-	ddnsProfilesRaw, err := utils.Json.Marshal(s.DDNSProfiles)
+	ddnsProfilesRaw, err := json.Marshal(s.DDNSProfiles)
 	if err != nil {
 		return nil, err
 	}
 	s.DDNSProfilesRaw = string(ddnsProfilesRaw)
 
-	overrideDomainsRaw, err := utils.Json.Marshal(sf.OverrideDDNSDomains)
+	overrideDomainsRaw, err := json.Marshal(sf.OverrideDDNSDomains)
 	if err != nil {
 		return nil, err
 	}
@@ -103,11 +97,9 @@ func updateServer(c *gin.Context) (any, error) {
 		return nil, newGormError("%v", err)
 	}
 
-	singleton.ServerLock.Lock()
-	s.CopyFromRunningServer(singleton.ServerList[s.ID])
-	singleton.ServerList[s.ID] = &s
-	singleton.ServerLock.Unlock()
-	singleton.ReSortServer()
+	rs, _ := singleton.ServerShared.Get(s.ID)
+	s.CopyFromRunningServer(rs)
+	singleton.ServerShared.Update(&s, "")
 
 	return nil, nil
 }
@@ -129,16 +121,9 @@ func batchDeleteServer(c *gin.Context) (any, error) {
 		return nil, err
 	}
 
-	singleton.ServerLock.RLock()
-	for _, sid := range servers {
-		if s, ok := singleton.ServerList[sid]; ok {
-			if !s.HasPermission(c) {
-				singleton.ServerLock.RUnlock()
-				return nil, singleton.Localizer.ErrorT("permission denied")
-			}
-		}
+	if !singleton.ServerShared.CheckPermission(c, slices.Values(servers)) {
+		return nil, singleton.Localizer.ErrorT("permission denied")
 	}
-	singleton.ServerLock.RUnlock()
 
 	err := singleton.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Unscoped().Delete(&model.Server{}, "id in (?)", servers).Error; err != nil {
@@ -167,9 +152,7 @@ func batchDeleteServer(c *gin.Context) (any, error) {
 	singleton.DB.Unscoped().Delete(&model.Transfer{}, "server_id in (?)", servers)
 	singleton.AlertsLock.Unlock()
 
-	singleton.OnServerDelete(servers)
-	singleton.ReSortServer()
-
+	singleton.ServerShared.Delete(servers)
 	return nil, nil
 }
 
@@ -182,20 +165,18 @@ func batchDeleteServer(c *gin.Context) (any, error) {
 // @Accept json
 // @param request body []uint64 true "id list"
 // @Produce json
-// @Success 200 {object} model.CommonResponse[model.ForceUpdateResponse]
+// @Success 200 {object} model.CommonResponse[model.ServerTaskResponse]
 // @Router /force-update/server [post]
-func forceUpdateServer(c *gin.Context) (*model.ForceUpdateResponse, error) {
+func forceUpdateServer(c *gin.Context) (*model.ServerTaskResponse, error) {
 	var forceUpdateServers []uint64
 	if err := c.ShouldBindJSON(&forceUpdateServers); err != nil {
 		return nil, err
 	}
 
-	forceUpdateResp := new(model.ForceUpdateResponse)
+	forceUpdateResp := new(model.ServerTaskResponse)
 
 	for _, sid := range forceUpdateServers {
-		singleton.ServerLock.RLock()
-		server := singleton.ServerList[sid]
-		singleton.ServerLock.RUnlock()
+		server, _ := singleton.ServerShared.Get(sid)
 		if server != nil && server.TaskStream != nil {
 			if !server.HasPermission(c) {
 				return nil, singleton.Localizer.ErrorT("permission denied")
@@ -223,7 +204,7 @@ func forceUpdateServer(c *gin.Context) (*model.ForceUpdateResponse, error) {
 // @Tags auth required
 // @Produce json
 // @Success 200 {object} model.CommonResponse[string]
-// @Router /server/{id}/config [get]
+// @Router /server/config/{id} [get]
 func getServerConfig(c *gin.Context) (string, error) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
@@ -231,13 +212,10 @@ func getServerConfig(c *gin.Context) (string, error) {
 		return "", err
 	}
 
-	singleton.ServerLock.RLock()
-	s, ok := singleton.ServerList[id]
+	s, ok := singleton.ServerShared.Get(id)
 	if !ok || s.TaskStream == nil {
-		singleton.ServerLock.RUnlock()
 		return "", nil
 	}
-	singleton.ServerLock.RUnlock()
 
 	if !s.HasPermission(c) {
 		return "", singleton.Localizer.ErrorT("permission denied")
@@ -273,40 +251,61 @@ func getServerConfig(c *gin.Context) (string, error) {
 // @Description Set server config
 // @Tags auth required
 // @Accept json
-// @param request body string true "config"
+// @Param body body model.ServerConfigForm true "ServerConfigForm"
 // @Produce json
-// @Success 200 {object} model.CommonResponse[any]
-// @Router /server/{id}/config [post]
-func setServerConfig(c *gin.Context) (any, error) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
-		return "", err
-	}
-
-	var configRaw string
-	if err := c.ShouldBindJSON(&configRaw); err != nil {
+// @Success 200 {object} model.CommonResponse[model.ServerTaskResponse]
+// @Router /server/config [post]
+func setServerConfig(c *gin.Context) (*model.ServerTaskResponse, error) {
+	var configForm model.ServerConfigForm
+	if err := c.ShouldBindJSON(&configForm); err != nil {
 		return nil, err
 	}
 
-	singleton.ServerLock.RLock()
-	s, ok := singleton.ServerList[id]
-	if !ok || s.TaskStream == nil {
-		singleton.ServerLock.RUnlock()
-		return "", nil
-	}
-	singleton.ServerLock.RUnlock()
-
-	if !s.HasPermission(c) {
-		return "", singleton.Localizer.ErrorT("permission denied")
-	}
-
-	if err := s.TaskStream.Send(&pb.Task{
-		Type: model.TaskTypeApplyConfig,
-		Data: configRaw,
-	}); err != nil {
-		return "", err
+	var resp model.ServerTaskResponse
+	slist := singleton.ServerShared.GetList()
+	servers := make([]*model.Server, 0, len(configForm.Servers))
+	for _, sid := range configForm.Servers {
+		if s, ok := slist[sid]; ok {
+			if !s.HasPermission(c) {
+				return nil, singleton.Localizer.ErrorT("permission denied")
+			}
+			if s.TaskStream == nil {
+				resp.Offline = append(resp.Offline, s.ID)
+				continue
+			}
+			servers = append(servers, s)
+		}
 	}
 
-	return nil, nil
+	var wg sync.WaitGroup
+	var respMu sync.Mutex
+
+	for i := 0; i < len(servers); i += 10 {
+		end := min(i+10, len(servers))
+		group := servers[i:end]
+
+		wg.Add(1)
+		go func(srvGroup []*model.Server) {
+			defer wg.Done()
+			for _, s := range srvGroup {
+				// Create and send the task.
+				task := &pb.Task{
+					Type: model.TaskTypeApplyConfig,
+					Data: configForm.Config,
+				}
+				if err := s.TaskStream.Send(task); err != nil {
+					respMu.Lock()
+					resp.Failure = append(resp.Failure, s.ID)
+					respMu.Unlock()
+					continue
+				}
+				respMu.Lock()
+				resp.Success = append(resp.Success, s.ID)
+				respMu.Unlock()
+			}
+		}(group)
+	}
+
+	wg.Wait()
+	return &resp, nil
 }

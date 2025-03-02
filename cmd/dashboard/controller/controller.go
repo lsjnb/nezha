@@ -110,8 +110,8 @@ func routers(r *gin.Engine, frontendDist fs.FS) {
 
 	auth.GET("/server", listHandler(listServer))
 	auth.PATCH("/server/:id", commonHandler(updateServer))
-	auth.GET("/server/:id/config", commonHandler(getServerConfig))
-	auth.POST("/server/:id/config", commonHandler(setServerConfig))
+	auth.GET("/server/config/:id", commonHandler(getServerConfig))
+	auth.POST("/server/config", commonHandler(setServerConfig))
 	auth.POST("/batch-delete/server", commonHandler(batchDeleteServer))
 	auth.POST("/force-update/server", commonHandler(forceUpdateServer))
 
@@ -175,10 +175,10 @@ type pHandlerFunc[S ~[]E, E any] func(c *gin.Context) (*model.Value[S], error)
 // gorm errors here instead
 type gormError struct {
 	msg string
-	a   []interface{}
+	a   []any
 }
 
-func newGormError(format string, args ...interface{}) error {
+func newGormError(format string, args ...any) error {
 	return &gormError{
 		msg: format,
 		a:   args,
@@ -191,10 +191,10 @@ func (ge *gormError) Error() string {
 
 type wsError struct {
 	msg string
-	a   []interface{}
+	a   []any
 }
 
-func newWsError(format string, args ...interface{}) error {
+func newWsError(format string, args ...any) error {
 	return &wsError{
 		msg: format,
 		a:   args,

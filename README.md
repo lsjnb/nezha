@@ -56,9 +56,9 @@ add your theme to [service/singleton/frontend-templates.yaml](service/singleton/
 <a href="https://github.com/xykt" title="xykt"><img src="https://avatars.githubusercontent.com/u/152045469?v=4" width="50;" alt="xykt"/></a>
 <a href="https://github.com/MikoyChinese" title="MikoyChinese"><img src="https://avatars.githubusercontent.com/u/22676744?v=4" width="50;" alt="MikoyChinese"/></a>
 <a href="https://github.com/JackieSung4ev" title="JackieSung4ev"><img src="https://avatars.githubusercontent.com/u/24974735?v=4" width="50;" alt="JackieSung4ev"/></a>
+<a href="https://github.com/weblate" title="Weblate (bot)"><img src="https://avatars.githubusercontent.com/u/1607653?v=4" width="50;" alt="Weblate (bot)"/></a>
 <a href="https://github.com/cantoblanco" title="Kris"><img src="https://avatars.githubusercontent.com/u/116849421?v=4" width="50;" alt="Kris"/></a>
 <a href="https://github.com/lemoeo" title="Lemoe"><img src="https://avatars.githubusercontent.com/u/18618627?v=4" width="50;" alt="Lemoe"/></a>
-<a href="https://github.com/weblate" title="Weblate (bot)"><img src="https://avatars.githubusercontent.com/u/1607653?v=4" width="50;" alt="Weblate (bot)"/></a>
 <a href="https://github.com/spiritLHLS" title="spiritlhl"><img src="https://avatars.githubusercontent.com/u/103393591?v=4" width="50;" alt="spiritlhl"/></a>
 <a href="https://github.com/liuyanxi975" title="刘颜溪"><img src="https://avatars.githubusercontent.com/u/24417037?v=4" width="50;" alt="刘颜溪"/></a>
 <a href="https://github.com/CosmosZ-code" title="CosmosZ-code"><img src="https://avatars.githubusercontent.com/u/81398224?v=4" width="50;" alt="CosmosZ-code"/></a>
@@ -102,6 +102,7 @@ add your theme to [service/singleton/frontend-templates.yaml](service/singleton/
 <a href="https://github.com/MartijnLindeman" title="Martijn Lindeman"><img src="https://avatars.githubusercontent.com/u/78365708?v=4" width="50;" alt="Martijn Lindeman"/></a>
 <a href="https://github.com/funnyzak" title="Leon"><img src="https://avatars.githubusercontent.com/u/2562087?v=4" width="50;" alt="Leon"/></a>
 <a href="https://github.com/KorenKrita" title="KorenKrita"><img src="https://avatars.githubusercontent.com/u/22239339?v=4" width="50;" alt="KorenKrita"/></a>
+<a href="https://github.com/MemoryShadow" title="JSker9"><img src="https://avatars.githubusercontent.com/u/31596045?v=4" width="50;" alt="JSker9"/></a>
 <a href="https://github.com/techotaku" title="Ian Li"><img src="https://avatars.githubusercontent.com/u/1948179?v=4" width="50;" alt="Ian Li"/></a>
 <a href="https://github.com/GreenTeodoro839" title="GreenTeodoro839"><img src="https://avatars.githubusercontent.com/u/77104800?v=4" width="50;" alt="GreenTeodoro839"/></a>
 <a href="https://github.com/Es-dese" title="Esdese"><img src="https://avatars.githubusercontent.com/u/71542548?v=4" width="50;" alt="Esdese"/></a>

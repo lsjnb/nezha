@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/go-uuid"
 	"golang.org/x/sync/singleflight"
@@ -157,15 +158,12 @@ func serverStream(c *gin.Context) (any, error) {
 var requestGroup singleflight.Group
 
 func getServerStat(withPublicNote, authorized bool) ([]byte, error) {
-	v, err, _ := requestGroup.Do(fmt.Sprintf("serverStats::%t", authorized), func() (interface{}, error) {
-		singleton.SortedServerLock.RLock()
-		defer singleton.SortedServerLock.RUnlock()
-
+	v, err, _ := requestGroup.Do(fmt.Sprintf("serverStats::%t", authorized), func() (any, error) {
 		var serverList []*model.Server
 		if authorized {
-			serverList = singleton.SortedServerList
+			serverList = singleton.ServerShared.GetSortedList()
 		} else {
-			serverList = singleton.SortedServerListForGuest
+			serverList = singleton.ServerShared.GetSortedListForGuest()
 		}
 
 		servers := make([]model.StreamServer, 0, len(serverList))
@@ -186,7 +184,7 @@ func getServerStat(withPublicNote, authorized bool) ([]byte, error) {
 			})
 		}
 
-		return utils.Json.Marshal(model.StreamServerData{
+		return json.Marshal(model.StreamServerData{
 			Now:     time.Now().Unix() * 1000,
 			Online:  singleton.GetOnlineUserCount(),
 			Servers: servers,

@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/go-uuid"
 
 	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
 	"github.com/nezhahq/nezha/pkg/websocketx"
 	"github.com/nezhahq/nezha/proto"
 	"github.com/nezhahq/nezha/service/rpc"
@@ -32,9 +32,7 @@ func createFM(c *gin.Context) (*model.CreateFMResponse, error) {
 		return nil, err
 	}
 
-	singleton.ServerLock.RLock()
-	server := singleton.ServerList[id]
-	singleton.ServerLock.RUnlock()
+	server, _ := singleton.ServerShared.Get(id)
 	if server == nil || server.TaskStream == nil {
 		return nil, singleton.Localizer.ErrorT("server not found or not connected")
 	}
@@ -50,7 +48,7 @@ func createFM(c *gin.Context) (*model.CreateFMResponse, error) {
 
 	rpc.NezhaHandlerSingleton.CreateStream(streamId)
 
-	fmData, _ := utils.Json.Marshal(&model.TaskFM{
+	fmData, _ := json.Marshal(&model.TaskFM{
 		StreamID: streamId,
 	})
 	if err := server.TaskStream.Send(&proto.Task{

@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -16,8 +18,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ory/graceful"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 
 	"github.com/nezhahq/nezha/cmd/dashboard/controller"
 	"github.com/nezhahq/nezha/cmd/dashboard/controller/waf"
@@ -63,12 +63,12 @@ func initSystem() {
 	singleton.LoadSingleton()
 
 	// 每天的3:30 对 监控记录 和 流量记录 进行清理
-	if _, err := singleton.Cron.AddFunc("0 30 3 * * *", singleton.CleanServiceHistory); err != nil {
+	if _, err := singleton.CronShared.AddFunc("0 30 3 * * *", singleton.CleanServiceHistory); err != nil {
 		panic(err)
 	}
 
 	// 每小时对流量记录进行打点
-	if _, err := singleton.Cron.AddFunc("0 0 * * * *", singleton.RecordTransferHourlyUsage); err != nil {
+	if _, err := singleton.CronShared.AddFunc("0 0 * * * *", singleton.RecordTransferHourlyUsage); err != nil {
 		panic(err)
 	}
 }
@@ -118,36 +118,74 @@ func main() {
 	}
 
 	singleton.CleanServiceHistory()
-	serviceSentinelDispatchBus := make(chan model.Service) // 用于传递服务监控任务信息的channel
+	serviceSentinelDispatchBus := make(chan *model.Service) // 用于传递服务监控任务信息的channel
 	rpc.DispatchKeepalive()
 	go rpc.DispatchTask(serviceSentinelDispatchBus)
 	go singleton.AlertSentinelStart()
-	singleton.NewServiceSentinel(serviceSentinelDispatchBus)
+	singleton.ServiceSentinelShared, err = singleton.NewServiceSentinel(
+		serviceSentinelDispatchBus, singleton.ServerShared, singleton.NotificationShared, singleton.CronShared)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	grpcHandler := rpc.ServeRPC()
 	httpHandler := controller.ServeWeb(frontendDist)
 	controller.InitUpgrader()
 
 	muxHandler := newHTTPandGRPCMux(httpHandler, grpcHandler)
-	http2Server := &http2.Server{}
-	muxServer := &http.Server{Handler: h2c.NewHandler(muxHandler, http2Server), ReadHeaderTimeout: time.Second * 5}
+	muxServerHTTP := &http.Server{
+		Handler:           muxHandler,
+		ReadHeaderTimeout: time.Second * 5,
+	}
+	muxServerHTTP.Protocols = new(http.Protocols)
+	muxServerHTTP.Protocols.SetHTTP1(true)
+	muxServerHTTP.Protocols.SetUnencryptedHTTP2(true)
+
+	var muxServerHTTPS *http.Server
+	if singleton.Conf.HTTPS.ListenPort != 0 {
+		muxServerHTTPS = &http.Server{
+			Addr:              fmt.Sprintf("%s:%d", singleton.Conf.ListenHost, singleton.Conf.HTTPS.ListenPort),
+			Handler:           muxHandler,
+			ReadHeaderTimeout: time.Second * 5,
+			TLSConfig: &tls.Config{
+				InsecureSkipVerify: singleton.Conf.HTTPS.InsecureTLS,
+			},
+		}
+	}
+
+	errChan := make(chan error, 2)
 
 	if err := graceful.Graceful(func() error {
-		log.Printf("sysctl>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.ListenPort)
-		return muxServer.Serve(l)
+		log.Printf("NEZHA>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.ListenPort)
+		if singleton.Conf.HTTPS.ListenPort != 0 {
+			go func() {
+				errChan <- muxServerHTTPS.ListenAndServeTLS(singleton.Conf.HTTPS.TLSCertPath, singleton.Conf.HTTPS.TLSKeyPath)
+			}()
+			log.Printf("sysctl>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.HTTPS.ListenPort)
+		}
+		go func() {
+			errChan <- muxServerHTTP.Serve(l)
+		}()
+		return <-errChan
 	}, func(c context.Context) error {
 		log.Println("sysctl>> Graceful::START")
 		singleton.RecordTransferHourlyUsage()
 		log.Println("sysctl>> Graceful::END")
-		return muxServer.Shutdown(c)
+		err := muxServerHTTPS.Shutdown(c)
+		return errors.Join(muxServerHTTP.Shutdown(c), err)
 	}); err != nil {
 		log.Printf("sysctl>> ERROR: %v", err)
+		if errors.Unwrap(err) != nil {
+			log.Printf("sysctl>> ERROR HTTPS: %v", err)
+		}
 	}
+
+	close(errChan)
 }
 
 func newHTTPandGRPCMux(httpHandler http.Handler, grpcHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		natConfig := singleton.GetNATConfigByDomain(r.Host)
+		natConfig := singleton.NATShared.GetNATConfigByDomain(r.Host)
 		if natConfig != nil {
 			if !natConfig.Enabled {
 				c, _ := gin.CreateTestContext(w)

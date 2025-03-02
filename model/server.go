@@ -5,9 +5,9 @@ import (
 	"slices"
 	"time"
 
+	"github.com/goccy/go-json"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/pkg/utils"
 	pb "github.com/nezhahq/nezha/proto"
 )
 
@@ -52,19 +52,20 @@ func (s *Server) CopyFromRunningServer(old *Server) {
 	s.GeoIP = old.GeoIP
 	s.LastActive = old.LastActive
 	s.TaskStream = old.TaskStream
+	s.ConfigCache = old.ConfigCache
 	s.PrevTransferInSnapshot = old.PrevTransferInSnapshot
 	s.PrevTransferOutSnapshot = old.PrevTransferOutSnapshot
 }
 
 func (s *Server) AfterFind(tx *gorm.DB) error {
 	if s.DDNSProfilesRaw != "" {
-		if err := utils.Json.Unmarshal([]byte(s.DDNSProfilesRaw), &s.DDNSProfiles); err != nil {
+		if err := json.Unmarshal([]byte(s.DDNSProfilesRaw), &s.DDNSProfiles); err != nil {
 			log.Println("sysctl>> Server.AfterFind:", err)
 			return nil
 		}
 	}
 	if s.OverrideDDNSDomainsRaw != "" {
-		if err := utils.Json.Unmarshal([]byte(s.OverrideDDNSDomainsRaw), &s.OverrideDDNSDomains); err != nil {
+		if err := json.Unmarshal([]byte(s.OverrideDDNSDomainsRaw), &s.OverrideDDNSDomains); err != nil {
 			log.Println("NEZHA>> Server.AfterFind:", err)
 			return nil
 		}

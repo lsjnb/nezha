@@ -3,23 +3,25 @@ package singleton
 import (
 	"cmp"
 	"fmt"
+	"iter"
 	"log"
+	"maps"
 	"slices"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"github.com/nezhahq/nezha/model"
 	"github.com/nezhahq/nezha/pkg/utils"
 	pb "github.com/nezhahq/nezha/proto"
+	"golang.org/x/exp/constraints"
 )
 
 const (
 	_CurrentStatusSize = 30 // 统计 15 分钟内的数据为当前状态
 )
-
-var ServiceSentinelShared *ServiceSentinel
 
 type serviceResponseItem struct {
 	model.ServiceResponseItem
@@ -39,57 +41,6 @@ type _TodayStatsOfService struct {
 	Delay float32 // 今日平均延迟
 }
 
-// NewServiceSentinel 创建服务监控器
-func NewServiceSentinel(serviceSentinelDispatchBus chan<- model.Service) {
-	ServiceSentinelShared = &ServiceSentinel{
-		serviceReportChannel:                    make(chan ReportData, 200),
-		serviceStatusToday:                      make(map[uint64]*_TodayStatsOfService),
-		serviceCurrentStatusIndex:               make(map[uint64]*indexStore),
-		serviceCurrentStatusData:                make(map[uint64][]*pb.TaskResult),
-		lastStatus:                              make(map[uint64]int),
-		serviceResponseDataStoreCurrentUp:       make(map[uint64]uint64),
-		serviceResponseDataStoreCurrentDown:     make(map[uint64]uint64),
-		serviceResponseDataStoreCurrentAvgDelay: make(map[uint64]float32),
-		serviceResponsePing:                     make(map[uint64]map[uint64]*pingStore),
-		Services:                                make(map[uint64]*model.Service),
-		tlsCertCache:                            make(map[uint64]string),
-		// 30天数据缓存
-		monthlyStatus: make(map[uint64]*serviceResponseItem),
-		dispatchBus:   serviceSentinelDispatchBus,
-	}
-	// 加载历史记录
-	ServiceSentinelShared.loadServiceHistory()
-
-	year, month, day := time.Now().Date()
-	today := time.Date(year, month, day, 0, 0, 0, 0, Loc)
-
-	var mhs []model.ServiceHistory
-	// 加载当日记录
-	DB.Where("created_at >= ?", today).Find(&mhs)
-	totalDelay := make(map[uint64]float32)
-	totalDelayCount := make(map[uint64]float32)
-	for i := 0; i < len(mhs); i++ {
-		totalDelay[mhs[i].ServiceID] += mhs[i].AvgDelay
-		totalDelayCount[mhs[i].ServiceID]++
-		ServiceSentinelShared.serviceStatusToday[mhs[i].ServiceID].Up += int(mhs[i].Up)
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].TotalUp += mhs[i].Up
-		ServiceSentinelShared.serviceStatusToday[mhs[i].ServiceID].Down += int(mhs[i].Down)
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].TotalDown += mhs[i].Down
-	}
-	for id, delay := range totalDelay {
-		ServiceSentinelShared.serviceStatusToday[id].Delay = delay / float32(totalDelayCount[id])
-	}
-
-	// 启动服务监控器
-	go ServiceSentinelShared.worker()
-
-	// 每日将游标往后推一天
-	_, err := Cron.AddFunc("0 0 0 * * *", ServiceSentinelShared.refreshMonthlyServiceStatus)
-	if err != nil {
-		panic(err)
-	}
-}
-
 /*
 使用缓存 channel，处理上报的 Service 请求结果，然后判断是否需要报警
 需要记录上一次的状态信息
@@ -100,7 +51,7 @@ type ServiceSentinel struct {
 	// 服务监控任务上报通道
 	serviceReportChannel chan ReportData // 服务状态汇报管道
 	// 服务监控任务调度通道
-	dispatchBus chan<- model.Service
+	dispatchBus chan<- *model.Service
 
 	serviceResponseDataStoreLock            sync.RWMutex
 	serviceStatusToday                      map[uint64]*_TodayStatsOfService // [service_id] -> _TodayStatsOfService
@@ -110,17 +61,83 @@ type ServiceSentinel struct {
 	serviceResponseDataStoreCurrentDown     map[uint64]uint64                // [service_id] -> 当前服务离线计数
 	serviceResponseDataStoreCurrentAvgDelay map[uint64]float32               // [service_id] -> 当前服务离线计数
 	serviceResponsePing                     map[uint64]map[uint64]*pingStore // [service_id] -> ClientID -> delay
-	lastStatus                              map[uint64]int
+	lastStatus                              map[uint64]uint8
 	tlsCertCache                            map[uint64]string
 
-	ServicesLock    sync.RWMutex
-	ServiceListLock sync.RWMutex
-	Services        map[uint64]*model.Service
-	ServiceList     []*model.Service
+	servicesLock    sync.RWMutex
+	serviceListLock sync.RWMutex
+	services        map[uint64]*model.Service
+	serviceList     []*model.Service
 
 	// 30天数据缓存
 	monthlyStatusLock sync.Mutex
 	monthlyStatus     map[uint64]*serviceResponseItem
+
+	// references
+	serverc       *ServerClass
+	notificationc *NotificationClass
+	crc           *CronClass
+}
+
+// NewServiceSentinel 创建服务监控器
+func NewServiceSentinel(serviceSentinelDispatchBus chan<- *model.Service, sc *ServerClass, nc *NotificationClass, crc *CronClass) (*ServiceSentinel, error) {
+	ss := &ServiceSentinel{
+		serviceReportChannel:                    make(chan ReportData, 200),
+		serviceStatusToday:                      make(map[uint64]*_TodayStatsOfService),
+		serviceCurrentStatusIndex:               make(map[uint64]*indexStore),
+		serviceCurrentStatusData:                make(map[uint64][]*pb.TaskResult),
+		lastStatus:                              make(map[uint64]uint8),
+		serviceResponseDataStoreCurrentUp:       make(map[uint64]uint64),
+		serviceResponseDataStoreCurrentDown:     make(map[uint64]uint64),
+		serviceResponseDataStoreCurrentAvgDelay: make(map[uint64]float32),
+		serviceResponsePing:                     make(map[uint64]map[uint64]*pingStore),
+		services:                                make(map[uint64]*model.Service),
+		tlsCertCache:                            make(map[uint64]string),
+		// 30天数据缓存
+		monthlyStatus: make(map[uint64]*serviceResponseItem),
+		dispatchBus:   serviceSentinelDispatchBus,
+
+		serverc:       sc,
+		notificationc: nc,
+		crc:           crc,
+	}
+
+	// 加载历史记录
+	err := ss.loadServiceHistory()
+	if err != nil {
+		return nil, err
+	}
+
+	year, month, day := time.Now().Date()
+	today := time.Date(year, month, day, 0, 0, 0, 0, Loc)
+
+	var mhs []model.ServiceHistory
+	// 加载当日记录
+	DB.Where("created_at >= ?", today).Find(&mhs)
+	totalDelay := make(map[uint64]float32)
+	totalDelayCount := make(map[uint64]float32)
+	for _, mh := range mhs {
+		totalDelay[mh.ServiceID] += mh.AvgDelay
+		totalDelayCount[mh.ServiceID]++
+		ss.serviceStatusToday[mh.ServiceID].Up += int(mh.Up)
+		ss.monthlyStatus[mh.ServiceID].TotalUp += mh.Up
+		ss.serviceStatusToday[mh.ServiceID].Down += int(mh.Down)
+		ss.monthlyStatus[mh.ServiceID].TotalDown += mh.Down
+	}
+	for id, delay := range totalDelay {
+		ss.serviceStatusToday[id].Delay = delay / float32(totalDelayCount[id])
+	}
+
+	// 启动服务监控器
+	go ss.worker()
+
+	// 每日将游标往后推一天
+	_, err = crc.AddFunc("0 0 0 * * *", ss.refreshMonthlyServiceStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	return ss, nil
 }
 
 type indexStore struct {
@@ -142,7 +159,7 @@ func (ss *ServiceSentinel) refreshMonthlyServiceStatus() {
 	ss.monthlyStatusLock.Lock()
 	defer ss.monthlyStatusLock.Unlock()
 	for k, v := range ss.monthlyStatus {
-		for i := 0; i < len(v.Up)-1; i++ {
+		for i := range len(v.Up) - 1 {
 			if i == 0 {
 				// 30 天在线率，减去已经出30天之外的数据
 				v.TotalDown -= uint64(v.Down[i])
@@ -169,47 +186,47 @@ func (ss *ServiceSentinel) Dispatch(r ReportData) {
 }
 
 func (ss *ServiceSentinel) UpdateServiceList() {
-	ss.ServicesLock.RLock()
-	defer ss.ServicesLock.RUnlock()
+	ss.servicesLock.RLock()
+	defer ss.servicesLock.RUnlock()
 
-	ss.ServiceListLock.Lock()
-	defer ss.ServiceListLock.Unlock()
+	ss.serviceListLock.Lock()
+	defer ss.serviceListLock.Unlock()
 
-	ss.ServiceList = utils.MapValuesToSlice(ss.Services)
-	slices.SortFunc(ss.ServiceList, func(a, b *model.Service) int {
+	ss.serviceList = utils.MapValuesToSlice(ss.services)
+	slices.SortFunc(ss.serviceList, func(a, b *model.Service) int {
 		return cmp.Compare(a.ID, b.ID)
 	})
 }
 
 // loadServiceHistory 加载服务监控器的历史状态信息
-func (ss *ServiceSentinel) loadServiceHistory() {
+func (ss *ServiceSentinel) loadServiceHistory() error {
 	var services []*model.Service
 	err := DB.Find(&services).Error
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	for i := 0; i < len(services); i++ {
-		task := *services[i]
+	for _, service := range services {
+		task := service
 		// 通过cron定时将服务监控任务传递给任务调度管道
-		services[i].CronJobID, err = Cron.AddFunc(task.CronSpec(), func() {
+		service.CronJobID, err = ss.crc.AddFunc(task.CronSpec(), func() {
 			ss.dispatchBus <- task
 		})
 		if err != nil {
-			panic(err)
+			return err
 		}
-		ss.Services[services[i].ID] = services[i]
-		ss.serviceCurrentStatusData[services[i].ID] = make([]*pb.TaskResult, _CurrentStatusSize)
-		ss.serviceStatusToday[services[i].ID] = &_TodayStatsOfService{}
+		ss.services[service.ID] = service
+		ss.serviceCurrentStatusData[service.ID] = make([]*pb.TaskResult, _CurrentStatusSize)
+		ss.serviceStatusToday[service.ID] = &_TodayStatsOfService{}
 	}
-	ss.ServiceList = services
+	ss.serviceList = services
 
 	year, month, day := time.Now().Date()
 	today := time.Date(year, month, day, 0, 0, 0, 0, Loc)
 
-	for i := 0; i < len(services); i++ {
-		ServiceSentinelShared.monthlyStatus[services[i].ID] = &serviceResponseItem{
-			service: services[i],
+	for _, service := range services {
+		ss.monthlyStatus[service.ID] = &serviceResponseItem{
+			service: service,
 			ServiceResponseItem: model.ServiceResponseItem{
 				Delay: &[30]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 				Up:    &[30]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -222,43 +239,45 @@ func (ss *ServiceSentinel) loadServiceHistory() {
 	var mhs []model.ServiceHistory
 	DB.Where("created_at > ? AND created_at < ?", today.AddDate(0, 0, -29), today).Find(&mhs)
 	var delayCount = make(map[int]int)
-	for i := 0; i < len(mhs); i++ {
-		dayIndex := 28 - (int(today.Sub(mhs[i].CreatedAt).Hours()) / 24)
+	for _, mh := range mhs {
+		dayIndex := 28 - (int(today.Sub(mh.CreatedAt).Hours()) / 24)
 		if dayIndex < 0 {
 			continue
 		}
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].Delay[dayIndex] = (ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].Delay[dayIndex]*float32(delayCount[dayIndex]) + mhs[i].AvgDelay) / float32(delayCount[dayIndex]+1)
+		ss.monthlyStatus[mh.ServiceID].Delay[dayIndex] = (ss.monthlyStatus[mh.ServiceID].Delay[dayIndex]*float32(delayCount[dayIndex]) + mh.AvgDelay) / float32(delayCount[dayIndex]+1)
 		delayCount[dayIndex]++
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].Up[dayIndex] += int(mhs[i].Up)
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].TotalUp += mhs[i].Up
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].Down[dayIndex] += int(mhs[i].Down)
-		ServiceSentinelShared.monthlyStatus[mhs[i].ServiceID].TotalDown += mhs[i].Down
+		ss.monthlyStatus[mh.ServiceID].Up[dayIndex] += int(mh.Up)
+		ss.monthlyStatus[mh.ServiceID].TotalUp += mh.Up
+		ss.monthlyStatus[mh.ServiceID].Down[dayIndex] += int(mh.Down)
+		ss.monthlyStatus[mh.ServiceID].TotalDown += mh.Down
 	}
+
+	return nil
 }
 
-func (ss *ServiceSentinel) OnServiceUpdate(m model.Service) error {
+func (ss *ServiceSentinel) Update(m *model.Service) error {
 	ss.serviceResponseDataStoreLock.Lock()
 	defer ss.serviceResponseDataStoreLock.Unlock()
 	ss.monthlyStatusLock.Lock()
 	defer ss.monthlyStatusLock.Unlock()
-	ss.ServicesLock.Lock()
-	defer ss.ServicesLock.Unlock()
+	ss.servicesLock.Lock()
+	defer ss.servicesLock.Unlock()
 
 	var err error
 	// 写入新任务
-	m.CronJobID, err = Cron.AddFunc(m.CronSpec(), func() {
+	m.CronJobID, err = ss.crc.AddFunc(m.CronSpec(), func() {
 		ss.dispatchBus <- m
 	})
 	if err != nil {
 		return err
 	}
-	if ss.Services[m.ID] != nil {
+	if ss.services[m.ID] != nil {
 		// 停掉旧任务
-		Cron.Remove(ss.Services[m.ID].CronJobID)
+		ss.crc.Remove(ss.services[m.ID].CronJobID)
 	} else {
 		// 新任务初始化数据
 		ss.monthlyStatus[m.ID] = &serviceResponseItem{
-			service: &m,
+			service: m,
 			ServiceResponseItem: model.ServiceResponseItem{
 				Delay: &[30]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 				Up:    &[30]int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -269,17 +288,17 @@ func (ss *ServiceSentinel) OnServiceUpdate(m model.Service) error {
 		ss.serviceStatusToday[m.ID] = &_TodayStatsOfService{}
 	}
 	// 更新这个任务
-	ss.Services[m.ID] = &m
+	ss.services[m.ID] = m
 	return nil
 }
 
-func (ss *ServiceSentinel) OnServiceDelete(ids []uint64) {
+func (ss *ServiceSentinel) Delete(ids []uint64) {
 	ss.serviceResponseDataStoreLock.Lock()
 	defer ss.serviceResponseDataStoreLock.Unlock()
 	ss.monthlyStatusLock.Lock()
 	defer ss.monthlyStatusLock.Unlock()
-	ss.ServicesLock.Lock()
-	defer ss.ServicesLock.Unlock()
+	ss.servicesLock.Lock()
+	defer ss.servicesLock.Unlock()
 
 	for _, id := range ids {
 		delete(ss.serviceCurrentStatusIndex, id)
@@ -292,24 +311,24 @@ func (ss *ServiceSentinel) OnServiceDelete(ids []uint64) {
 		delete(ss.serviceStatusToday, id)
 
 		// 停掉定时任务
-		Cron.Remove(ss.Services[id].CronJobID)
-		delete(ss.Services, id)
+		ss.crc.Remove(ss.services[id].CronJobID)
+		delete(ss.services, id)
 
 		delete(ss.monthlyStatus, id)
 	}
 }
 
 func (ss *ServiceSentinel) LoadStats() map[uint64]*serviceResponseItem {
-	ss.ServicesLock.RLock()
-	defer ss.ServicesLock.RUnlock()
+	ss.servicesLock.RLock()
+	defer ss.servicesLock.RUnlock()
 	ss.serviceResponseDataStoreLock.RLock()
 	defer ss.serviceResponseDataStoreLock.RUnlock()
 	ss.monthlyStatusLock.Lock()
 	defer ss.monthlyStatusLock.Unlock()
 
 	// 刷新最新一天的数据
-	for k := range ss.Services {
-		ss.monthlyStatus[k].service = ss.Services[k]
+	for k := range ss.services {
+		ss.monthlyStatus[k].service = ss.services[k]
 		v := ss.serviceStatusToday[k]
 
 		// 30 天在线率，
@@ -354,14 +373,52 @@ func (ss *ServiceSentinel) CopyStats() map[uint64]model.ServiceResponseItem {
 	return sri
 }
 
+func (ss *ServiceSentinel) Get(id uint64) (s *model.Service, ok bool) {
+	ss.servicesLock.RLock()
+	defer ss.servicesLock.RUnlock()
+
+	s, ok = ss.services[id]
+	return
+}
+
+func (ss *ServiceSentinel) GetList() map[uint64]*model.Service {
+	ss.servicesLock.RLock()
+	defer ss.servicesLock.RUnlock()
+
+	return maps.Clone(ss.services)
+}
+
+func (ss *ServiceSentinel) GetSortedList() []*model.Service {
+	ss.serviceListLock.RLock()
+	defer ss.serviceListLock.RUnlock()
+
+	return slices.Clone(ss.serviceList)
+}
+
+func (ss *ServiceSentinel) CheckPermission(c *gin.Context, idList iter.Seq[uint64]) bool {
+	ss.servicesLock.RLock()
+	defer ss.servicesLock.RUnlock()
+
+	for id := range idList {
+		if s, ok := ss.services[id]; ok {
+			if !s.HasPermission(c) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // worker 服务监控的实际工作流程
 func (ss *ServiceSentinel) worker() {
 	// 从服务状态汇报管道获取汇报的服务数据
 	for r := range ss.serviceReportChannel {
-		if ss.Services[r.Data.GetId()] == nil || ss.Services[r.Data.GetId()].ID == 0 {
+		css, _ := ss.Get(r.Data.GetId())
+		if css == nil || css.ID == 0 {
 			log.Printf("sysctl>> Incorrect service monitor report %+v", r)
 			continue
 		}
+		css = nil
 		mh := r.Data
 		if mh.Type == model.TaskTypeTCPPing || mh.Type == model.TaskTypeICMPPing {
 			serviceTcpMap, ok := ss.serviceResponsePing[mh.GetId()]
@@ -419,11 +476,11 @@ func (ss *ServiceSentinel) worker() {
 		ss.serviceResponseDataStoreCurrentAvgDelay[mh.GetId()] = 0
 
 		// 永远是最新的 30 个数据的状态 [01:00, 02:00, 03:00] -> [04:00, 02:00, 03: 00]
-		for i := 0; i < len(ss.serviceCurrentStatusData[mh.GetId()]); i++ {
-			if ss.serviceCurrentStatusData[mh.GetId()][i].GetId() > 0 {
-				if ss.serviceCurrentStatusData[mh.GetId()][i].Successful {
+		for _, cs := range ss.serviceCurrentStatusData[mh.GetId()] {
+			if cs.GetId() > 0 {
+				if cs.Successful {
 					ss.serviceResponseDataStoreCurrentUp[mh.GetId()]++
-					ss.serviceResponseDataStoreCurrentAvgDelay[mh.GetId()] = (ss.serviceResponseDataStoreCurrentAvgDelay[mh.GetId()]*float32(ss.serviceResponseDataStoreCurrentUp[mh.GetId()]-1) + ss.serviceCurrentStatusData[mh.GetId()][i].Delay) / float32(ss.serviceResponseDataStoreCurrentUp[mh.GetId()])
+					ss.serviceResponseDataStoreCurrentAvgDelay[mh.GetId()] = (ss.serviceResponseDataStoreCurrentAvgDelay[mh.GetId()]*float32(ss.serviceResponseDataStoreCurrentUp[mh.GetId()]-1) + cs.Delay) / float32(ss.serviceResponseDataStoreCurrentUp[mh.GetId()])
 				} else {
 					ss.serviceResponseDataStoreCurrentDown[mh.GetId()]++
 				}
@@ -454,79 +511,20 @@ func (ss *ServiceSentinel) worker() {
 			}
 		}
 
+		cs, _ := ss.Get(mh.GetId())
+		m := ss.serverc.GetList()
 		// 延迟报警
 		if mh.Delay > 0 {
-			ss.ServicesLock.RLock()
-			if ss.Services[mh.GetId()].LatencyNotify {
-				notificationGroupID := ss.Services[mh.GetId()].NotificationGroupID
-				minMuteLabel := NotificationMuteLabel.ServiceLatencyMin(mh.GetId())
-				maxMuteLabel := NotificationMuteLabel.ServiceLatencyMax(mh.GetId())
-				if mh.Delay > ss.Services[mh.GetId()].MaxLatency {
-					// 延迟超过最大值
-					ServerLock.RLock()
-					reporterServer := ServerList[r.Reporter]
-					msg := Localizer.Tf("[Latency] %s %2f > %2f, Reporter: %s", ss.Services[mh.GetId()].Name, mh.Delay, ss.Services[mh.GetId()].MaxLatency, reporterServer.Name)
-					go SendNotification(notificationGroupID, msg, minMuteLabel)
-					ServerLock.RUnlock()
-				} else if mh.Delay < ss.Services[mh.GetId()].MinLatency {
-					// 延迟低于最小值
-					ServerLock.RLock()
-					reporterServer := ServerList[r.Reporter]
-					msg := Localizer.Tf("[Latency] %s %2f < %2f, Reporter: %s", ss.Services[mh.GetId()].Name, mh.Delay, ss.Services[mh.GetId()].MinLatency, reporterServer.Name)
-					go SendNotification(notificationGroupID, msg, maxMuteLabel)
-					ServerLock.RUnlock()
-				} else {
-					// 正常延迟， 清除静音缓存
-					UnMuteNotification(notificationGroupID, minMuteLabel)
-					UnMuteNotification(notificationGroupID, maxMuteLabel)
-				}
-			}
-			ss.ServicesLock.RUnlock()
+			delayCheck(&r, ss.notificationc, m, cs, mh)
 		}
 
 		// 状态变更报警+触发任务执行
 		if stateCode == StatusDown || stateCode != ss.lastStatus[mh.GetId()] {
-			ss.ServicesLock.Lock()
 			lastStatus := ss.lastStatus[mh.GetId()]
 			// 存储新的状态值
 			ss.lastStatus[mh.GetId()] = stateCode
 
-			// 判断是否需要发送通知
-			isNeedSendNotification := ss.Services[mh.GetId()].Notify && (lastStatus != 0 || stateCode == StatusDown)
-			if isNeedSendNotification {
-				ServerLock.RLock()
-
-				reporterServer := ServerList[r.Reporter]
-				notificationGroupID := ss.Services[mh.GetId()].NotificationGroupID
-				notificationMsg := Localizer.Tf("[%s] %s Reporter: %s, Error: %s", StatusCodeToString(stateCode), ss.Services[mh.GetId()].Name, reporterServer.Name, mh.Data)
-				muteLabel := NotificationMuteLabel.ServiceStateChanged(mh.GetId())
-
-				// 状态变更时，清除静音缓存
-				if stateCode != lastStatus {
-					UnMuteNotification(notificationGroupID, muteLabel)
-				}
-
-				go SendNotification(notificationGroupID, notificationMsg, muteLabel)
-				ServerLock.RUnlock()
-			}
-
-			// 判断是否需要触发任务
-			isNeedTriggerTask := ss.Services[mh.GetId()].EnableTriggerTask && lastStatus != 0
-			if isNeedTriggerTask {
-				ServerLock.RLock()
-				reporterServer := ServerList[r.Reporter]
-				ServerLock.RUnlock()
-
-				if stateCode == StatusGood && lastStatus != stateCode {
-					// 当前状态正常 前序状态非正常时 触发恢复任务
-					go SendTriggerTasks(ss.Services[mh.GetId()].RecoverTriggerTasks, reporterServer.ID)
-				} else if lastStatus == StatusGood && lastStatus != stateCode {
-					// 前序状态正常 当前状态非正常时 触发失败任务
-					go SendTriggerTasks(ss.Services[mh.GetId()].FailTriggerTasks, reporterServer.ID)
-				}
-			}
-
-			ss.ServicesLock.Unlock()
+			notifyCheck(&r, ss.notificationc, ss.crc, m, cs, mh, lastStatus, stateCode)
 		}
 		ss.serviceResponseDataStoreLock.Unlock()
 
@@ -538,22 +536,18 @@ func (ss *ServiceSentinel) worker() {
 				!strings.HasSuffix(mh.Data, "EOF") &&
 				!strings.HasSuffix(mh.Data, "timed out") {
 				errMsg = mh.Data
-				ss.ServicesLock.RLock()
-				if ss.Services[mh.GetId()].Notify {
+				if cs.Notify {
 					muteLabel := NotificationMuteLabel.ServiceTLS(mh.GetId(), "network")
-					go SendNotification(ss.Services[mh.GetId()].NotificationGroupID, Localizer.Tf("[TLS] Fetch cert info failed, Reporter: %s, Error: %s", ss.Services[mh.GetId()].Name, errMsg), muteLabel)
+					go ss.notificationc.SendNotification(cs.NotificationGroupID, Localizer.Tf("[TLS] Fetch cert info failed, Reporter: %s, Error: %s", cs.Name, errMsg), muteLabel)
 				}
-				ss.ServicesLock.RUnlock()
-
 			}
 		} else {
 			// 清除网络错误静音缓存
-			UnMuteNotification(ss.Services[mh.GetId()].NotificationGroupID, NotificationMuteLabel.ServiceTLS(mh.GetId(), "network"))
+			ss.notificationc.UnMuteNotification(cs.NotificationGroupID, NotificationMuteLabel.ServiceTLS(mh.GetId(), "network"))
 
 			var newCert = strings.Split(mh.Data, "|")
 			if len(newCert) > 1 {
-				ss.ServicesLock.Lock()
-				enableNotify := ss.Services[mh.GetId()].Notify
+				enableNotify := cs.Notify
 
 				// 首次获取证书信息时，缓存证书信息
 				if ss.tlsCertCache[mh.GetId()] == "" {
@@ -571,9 +565,8 @@ func (ss *ServiceSentinel) worker() {
 					ss.tlsCertCache[mh.GetId()] = mh.Data
 				}
 
-				notificationGroupID := ss.Services[mh.GetId()].NotificationGroupID
-				serviceName := ss.Services[mh.GetId()].Name
-				ss.ServicesLock.Unlock()
+				notificationGroupID := cs.NotificationGroupID
+				serviceName := cs.Name
 
 				// 需要发送提醒
 				if enableNotify {
@@ -588,7 +581,7 @@ func (ss *ServiceSentinel) worker() {
 						// 静音规则： 服务id+证书过期时间
 						// 用于避免多个监测点对相同证书同时报警
 						muteLabel := NotificationMuteLabel.ServiceTLS(mh.GetId(), fmt.Sprintf("expire_%s", expiresTimeStr))
-						go SendNotification(notificationGroupID, fmt.Sprintf("[TLS] %s %s", serviceName, errMsg), muteLabel)
+						go ss.notificationc.SendNotification(notificationGroupID, fmt.Sprintf("[TLS] %s %s", serviceName, errMsg), muteLabel)
 					}
 
 					// 证书变更提醒
@@ -598,10 +591,67 @@ func (ss *ServiceSentinel) worker() {
 							oldCert[0], expiresOld.Format("2006-01-02 15:04:05"), newCert[0], expiresNew.Format("2006-01-02 15:04:05"))
 
 						// 证书变更后会自动更新缓存，所以不需要静音
-						go SendNotification(notificationGroupID, fmt.Sprintf("[TLS] %s %s", serviceName, errMsg), nil)
+						go ss.notificationc.SendNotification(notificationGroupID, fmt.Sprintf("[TLS] %s %s", serviceName, errMsg), nil)
 					}
 				}
 			}
+		}
+	}
+}
+
+func delayCheck(r *ReportData, nc *NotificationClass, m map[uint64]*model.Server, ss *model.Service, mh *pb.TaskResult) {
+	if !ss.LatencyNotify {
+		return
+	}
+
+	notificationGroupID := ss.NotificationGroupID
+	minMuteLabel := NotificationMuteLabel.ServiceLatencyMin(mh.GetId())
+	maxMuteLabel := NotificationMuteLabel.ServiceLatencyMax(mh.GetId())
+	if mh.Delay > ss.MaxLatency {
+		// 延迟超过最大值
+		reporterServer := m[r.Reporter]
+		msg := Localizer.Tf("[Latency] %s %2f > %2f, Reporter: %s", ss.Name, mh.Delay, ss.MaxLatency, reporterServer.Name)
+		go nc.SendNotification(notificationGroupID, msg, minMuteLabel)
+	} else if mh.Delay < ss.MinLatency {
+		// 延迟低于最小值
+		reporterServer := m[r.Reporter]
+		msg := Localizer.Tf("[Latency] %s %2f < %2f, Reporter: %s", ss.Name, mh.Delay, ss.MinLatency, reporterServer.Name)
+		go nc.SendNotification(notificationGroupID, msg, maxMuteLabel)
+	} else {
+		// 正常延迟， 清除静音缓存
+		nc.UnMuteNotification(notificationGroupID, minMuteLabel)
+		nc.UnMuteNotification(notificationGroupID, maxMuteLabel)
+	}
+}
+
+func notifyCheck(r *ReportData, nc *NotificationClass, crc *CronClass, m map[uint64]*model.Server,
+	ss *model.Service, mh *pb.TaskResult, lastStatus, stateCode uint8) {
+	// 判断是否需要发送通知
+	isNeedSendNotification := ss.Notify && (lastStatus != 0 || stateCode == StatusDown)
+	if isNeedSendNotification {
+		reporterServer := m[r.Reporter]
+		notificationGroupID := ss.NotificationGroupID
+		notificationMsg := Localizer.Tf("[%s] %s Reporter: %s, Error: %s", StatusCodeToString(stateCode), ss.Name, reporterServer.Name, mh.Data)
+		muteLabel := NotificationMuteLabel.ServiceStateChanged(mh.GetId())
+
+		// 状态变更时，清除静音缓存
+		if stateCode != lastStatus {
+			nc.UnMuteNotification(notificationGroupID, muteLabel)
+		}
+
+		go nc.SendNotification(notificationGroupID, notificationMsg, muteLabel)
+	}
+
+	// 判断是否需要触发任务
+	isNeedTriggerTask := ss.EnableTriggerTask && lastStatus != 0
+	if isNeedTriggerTask {
+		reporterServer := m[r.Reporter]
+		if stateCode == StatusGood && lastStatus != stateCode {
+			// 当前状态正常 前序状态非正常时 触发恢复任务
+			go crc.SendTriggerTasks(ss.RecoverTriggerTasks, reporterServer.ID)
+		} else if lastStatus == StatusGood && lastStatus != stateCode {
+			// 前序状态正常 当前状态非正常时 触发失败任务
+			go crc.SendTriggerTasks(ss.FailTriggerTasks, reporterServer.ID)
 		}
 	}
 }
@@ -614,7 +664,7 @@ const (
 	StatusDown
 )
 
-func GetStatusCode[T float32 | uint64](percent T) int {
+func GetStatusCode[T constraints.Float | constraints.Integer](percent T) uint8 {
 	if percent == 0 {
 		return StatusNoData
 	}
@@ -627,7 +677,7 @@ func GetStatusCode[T float32 | uint64](percent T) int {
 	return StatusDown
 }
 
-func StatusCodeToString(statusCode int) string {
+func StatusCodeToString(statusCode uint8) string {
 	switch statusCode {
 	case StatusNoData:
 		return Localizer.T("No Data")
