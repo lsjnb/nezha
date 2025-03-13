@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"iter"
 	"maps"
 	"math/big"
@@ -82,6 +83,14 @@ func GenerateRandomString(n int) (string, error) {
 	return string(ret), nil
 }
 
+func MustGenerateRandomString(n int) string {
+	str, err := GenerateRandomString(n)
+	if err != nil {
+		panic(fmt.Errorf("MustGenerateRandomString: %v", err))
+	}
+	return str
+}
+
 func Uint64SubInt64(a uint64, b int64) uint64 {
 	if b < 0 {
 		return a + uint64(-b)
@@ -148,4 +157,20 @@ func ConvertSeq2[KIn, VIn, KOut, VOut any](seq iter.Seq2[KIn, VIn], f func(KIn, 
 			}
 		}
 	}
+}
+
+type WrapError struct {
+	err, errIn error
+}
+
+func NewWrapError(err, errIn error) error {
+	return &WrapError{err, errIn}
+}
+
+func (e *WrapError) Error() string {
+	return e.err.Error()
+}
+
+func (e *WrapError) Unwrap() error {
+	return e.errIn
 }

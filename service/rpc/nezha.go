@@ -51,7 +51,7 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 		result, err = stream.Recv()
 		if err != nil {
 			log.Printf("sysctl>> RequestTask error: %v, clientID: %d\n", err, clientID)
-			return nil
+			return err
 		}
 		switch result.GetType() {
 		case model.TaskTypeCommand:
@@ -63,11 +63,11 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 				copier.Copy(&curServer, server)
 				if cr.PushSuccessful && result.GetSuccessful() {
 					singleton.NotificationShared.SendNotification(cr.NotificationGroupID, fmt.Sprintf("[%s] %s, %s\n%s", singleton.Localizer.T("Scheduled Task Executed Successfully"),
-						cr.Name, server.Name, result.GetData()), nil, &curServer)
+						cr.Name, server.Name, result.GetData()), "", &curServer)
 				}
 				if !result.GetSuccessful() {
 					singleton.NotificationShared.SendNotification(cr.NotificationGroupID, fmt.Sprintf("[%s] %s, %s\n%s", singleton.Localizer.T("Scheduled Task Executed Failed"),
-						cr.Name, server.Name, result.GetData()), nil, &curServer)
+						cr.Name, server.Name, result.GetData()), "", &curServer)
 				}
 				singleton.DB.Model(cr).Updates(model.Cron{
 					LastExecutedAt: time.Now().Add(time.Second * -1 * time.Duration(result.GetDelay())),
@@ -94,34 +94,36 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 }
 
 func (s *NezhaHandler) ReportSystemState(stream pb.NezhaService_ReportSystemStateServer) error {
-	var err error
-	var clientID uint64
-	if clientID, err = s.Auth.Check(stream.Context()); err != nil {
+	clientID, err := s.Auth.Check(stream.Context())
+	if err != nil {
 		return err
 	}
 	var state *pb.State
 	for {
 		state, err = stream.Recv()
 		if err != nil {
-			log.Printf("sysctl>> ReportSystemState eror: %v, clientID: %d\n", err, clientID)
-			return nil
+			log.Printf("sysctl>> ReportSystemState error: %v, clientID: %d\n", err, clientID)
+			return err
 		}
-		state := model.PB2State(state)
+		innerState := model.PB2State(state)
 
 		server, ok := singleton.ServerShared.Get(clientID)
 		if !ok || server == nil {
-			return nil
+			return errors.New("server not found")
 		}
 
 		server.LastActive = time.Now()
-		server.State = &state
+		server.State = &innerState
+
 		// 应对 dashboard 重启的情况，如果从未记录过，先打点，等到小时时间点时入库
 		if server.PrevTransferInSnapshot == 0 || server.PrevTransferOutSnapshot == 0 {
 			server.PrevTransferInSnapshot = int64(state.NetInTransfer)
 			server.PrevTransferOutSnapshot = int64(state.NetOutTransfer)
 		}
 
-		stream.Send(&pb.Receipt{Proced: true})
+		if err = stream.Send(&pb.Receipt{Proced: true}); err != nil {
+			return err
+		}
 	}
 }
 
@@ -153,12 +155,16 @@ func (s *NezhaHandler) onReportSystemInfo(c context.Context, r *pb.Host) error {
 }
 
 func (s *NezhaHandler) ReportSystemInfo(c context.Context, r *pb.Host) (*pb.Receipt, error) {
-	s.onReportSystemInfo(c, r)
+	if err := s.onReportSystemInfo(c, r); err != nil {
+		return nil, err
+	}
 	return &pb.Receipt{Proced: true}, nil
 }
 
 func (s *NezhaHandler) ReportSystemInfo2(c context.Context, r *pb.Host) (*pb.Uint64Receipt, error) {
-	s.onReportSystemInfo(c, r)
+	if err := s.onReportSystemInfo(c, r); err != nil {
+		return nil, err
+	}
 	return &pb.Uint64Receipt{Data: singleton.DashboardBootTime}, nil
 }
 
@@ -258,7 +264,7 @@ func (s *NezhaHandler) ReportGeoIP(c context.Context, r *pb.GeoIP) (*pb.GeoIP, e
 				server.Name, singleton.IPDesensitize(server.GeoIP.IP.Join()),
 				singleton.IPDesensitize(joinedIP),
 			),
-			nil)
+			"")
 	}
 
 	// 根据内置数据库查询 IP 地理位置
