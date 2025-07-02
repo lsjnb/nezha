@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/netip"
 	"time"
 
 	"github.com/libdns/libdns"
@@ -20,10 +21,8 @@ const (
 )
 
 type Provider struct {
-	ipAddr     string
-	recordType string
-	prefix     string
-	zone       string
+	prefix string
+	zone   string
 
 	DDNSProfile *model.DDNSProfile
 	IPAddrs     *model.IP
@@ -36,7 +35,7 @@ func (provider *Provider) GetProfileID() uint64 {
 
 func (provider *Provider) UpdateDomain(ctx context.Context, overrideDomains ...string) {
 	for _, domain := range utils.IfOr(len(overrideDomains) > 0, overrideDomains, provider.DDNSProfile.Domains) {
-		for retries := 0; retries < int(provider.DDNSProfile.MaxRetries); retries++ {
+		for retries := range int(provider.DDNSProfile.MaxRetries) {
 			log.Printf("sysctl>> Updating DNS Record of domain %s: %d/%d", domain, retries+1, provider.DDNSProfile.MaxRetries)
 			if err := provider.updateDomain(ctx, domain); err != nil {
 				log.Printf("sysctl>> Failed to update DNS record of domain %s: %v", domain, err)
@@ -57,17 +56,13 @@ func (provider *Provider) updateDomain(ctx context.Context, domain string) error
 
 	// 当IPv4和IPv6同时成功才算作成功
 	if *provider.DDNSProfile.EnableIPv4 {
-		provider.recordType = getRecordString(true)
-		provider.ipAddr = provider.IPAddrs.IPv4Addr
-		if err = provider.addDomainRecord(ctx); err != nil {
+		if err = provider.addDomainRecord(ctx, "A", provider.IPAddrs.IPv4Addr); err != nil {
 			return err
 		}
 	}
 
 	if *provider.DDNSProfile.EnableIPv6 {
-		provider.recordType = getRecordString(false)
-		provider.ipAddr = provider.IPAddrs.IPv6Addr
-		if err = provider.addDomainRecord(ctx); err != nil {
+		if err = provider.addDomainRecord(ctx, "AAAA", provider.IPAddrs.IPv6Addr); err != nil {
 			return err
 		}
 	}
@@ -75,14 +70,18 @@ func (provider *Provider) updateDomain(ctx context.Context, domain string) error
 	return nil
 }
 
-func (provider *Provider) addDomainRecord(ctx context.Context) error {
-	_, err := provider.Setter.SetRecords(ctx, provider.zone,
+func (provider *Provider) addDomainRecord(ctx context.Context, recType, addr string) error {
+	netipAddr, err := netip.ParseAddr(addr)
+	if err != nil {
+		return fmt.Errorf("parse error: %v", err)
+	}
+
+	_, err = provider.Setter.SetRecords(ctx, provider.zone,
 		[]libdns.Record{
-			{
-				Type:  provider.recordType,
-				Name:  provider.prefix,
-				Value: provider.ipAddr,
-				TTL:   time.Minute,
+			libdns.Address{
+				Name: provider.prefix,
+				IP:   netipAddr,
+				TTL:  time.Minute,
 			},
 		})
 	return err
@@ -122,11 +121,4 @@ func (provider *Provider) splitDomainSOA(ctx context.Context, domain string) (pr
 	}
 
 	return "", "", fmt.Errorf("SOA record not found for domain: %s", domain)
-}
-
-func getRecordString(isIpv4 bool) string {
-	if isIpv4 {
-		return "A"
-	}
-	return "AAAA"
 }
