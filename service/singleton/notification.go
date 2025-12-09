@@ -229,7 +229,7 @@ func (c *NotificationClass) SendNotification(notificationGroupID uint64, desc st
 
 		if !flag {
 			if Conf.Debug {
-				log.Println("NEZHA>> Muted repeated notification", desc, muteLabel)
+				log.Println("sysctl>> Muted repeated notification", desc, muteLabel)
 			}
 			return
 		}
@@ -238,7 +238,7 @@ func (c *NotificationClass) SendNotification(notificationGroupID uint64, desc st
 	c.listMu.RLock()
 	defer c.listMu.RUnlock()
 	for _, n := range c.groupToIDList[notificationGroupID] {
-		log.Printf("NEZHA>> Try to notify %s", n.Name)
+		log.Printf("sysctl>> Try to notify %s", n.Name)
 	}
 	for _, n := range c.groupToIDList[notificationGroupID] {
 		ns := model.NotificationServerBundle{
@@ -250,9 +250,9 @@ func (c *NotificationClass) SendNotification(notificationGroupID uint64, desc st
 			ns.Server = ext[0]
 		}
 		if err := ns.Send(desc); err != nil {
-			log.Printf("NEZHA>> Sending notification to %s failed: %v", n.Name, err)
+			log.Printf("sysctl>> Sending notification to %s failed: %v", n.Name, err)
 		} else {
-			log.Printf("NEZHA>> Sending notification to %s succeeded", n.Name)
+			log.Printf("sysctl>> Sending notification to %s succeeded", n.Name)
 		}
 	}
 }

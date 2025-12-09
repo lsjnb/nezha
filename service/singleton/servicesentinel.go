@@ -538,7 +538,7 @@ func (ss *ServiceSentinel) worker() {
 		reporter, _ := ServerShared.Get(r.Reporter)
 		// 入站结果必须匹配出站任务派发边界，避免 agent 伪造其他服务 ID 写入监控状态。
 		if !canReportServiceResult(cs, reporter, r.Data.GetType()) {
-			log.Printf("NEZHA>> Incorrect service monitor report %+v", r)
+			log.Printf("sysctl>> Incorrect service monitor report %+v", r)
 			continue
 		}
 
@@ -568,7 +568,7 @@ func (ss *ServiceSentinel) worker() {
 						Delay:      ts.ping,
 						Successful: ts.successCount*2 >= ts.count,
 					}); err != nil {
-						log.Printf("NEZHA>> Failed to save service monitor metrics to TSDB: %v", err)
+						log.Printf("sysctl>> Failed to save service monitor metrics to TSDB: %v", err)
 					}
 				} else {
 					if err := DB.Create(&model.ServiceHistory{
@@ -577,7 +577,7 @@ func (ss *ServiceSentinel) worker() {
 						Data:      mh.Data,
 						ServerID:  r.Reporter,
 					}).Error; err != nil {
-						log.Printf("NEZHA>> Failed to save service monitor metrics: %v", err)
+						log.Printf("sysctl>> Failed to save service monitor metrics: %v", err)
 					}
 				}
 				ts.count = 0
@@ -660,7 +660,7 @@ func (ss *ServiceSentinel) worker() {
 					Up:        rd.Up,
 					Down:      rd.Down,
 				}).Error; err != nil {
-					log.Printf("NEZHA>> Failed to save service monitor metrics: %v", err)
+					log.Printf("sysctl>> Failed to save service monitor metrics: %v", err)
 				}
 			}
 			ss.serviceCurrentStatusData[mh.GetId()].result = ss.serviceCurrentStatusData[mh.GetId()].result[:0]
