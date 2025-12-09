@@ -456,7 +456,7 @@ func (c *NotificationClass) SendNotification(notificationGroupID uint64, desc st
 	c.listMu.RUnlock()
 
 	if len(notifications) == 0 {
-		log.Printf("NEZHA>> Notification group %d has no recipients", notificationGroupID)
+		log.Printf("sysctl>> Notification group %d has no recipients", notificationGroupID)
 		return false
 	}
 	allDelivered := true
@@ -497,7 +497,7 @@ func (c *NotificationClass) sendRecipient(n *model.Notification, desc, fullMuteL
 			}
 		}
 	}
-	log.Printf("NEZHA>> Try to notify %s", n.Name)
+	log.Printf("sysctl>> Try to notify %s", n.Name)
 	var err error
 	if c.sendForTest != nil {
 		err = c.sendForTest(n, desc, server)
@@ -507,10 +507,10 @@ func (c *NotificationClass) sendRecipient(n *model.Notification, desc, fullMuteL
 	if err != nil {
 		// Webhook errors can contain a credential-bearing request URL. Keep
 		// failure type without ever writing the URL/token to dashboard logs.
-		log.Printf("NEZHA>> Sending notification to %s failed (%s)", n.Name, notificationFailureSummary(err))
+		log.Printf("sysctl>> Sending notification to %s failed (%s)", n.Name, notificationFailureSummary(err))
 		return false
 	}
-	log.Printf("NEZHA>> Sending notification to %s succeeded", n.Name)
+	log.Printf("sysctl>> Sending notification to %s succeeded", n.Name)
 	if cacheKey != "" {
 		if history.Duration == 0 {
 			history.Duration = firstNotificationDelay

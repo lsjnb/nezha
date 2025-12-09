@@ -123,7 +123,7 @@ func (ss *ServiceSentinel) flushServiceHistory(serviceID uint64, status *service
 			Up:        status.history.Up,
 			Down:      status.history.Down,
 		}).Error; err != nil {
-			log.Printf("NEZHA>> Failed to save service monitor metrics: %v", err)
+			log.Printf("sysctl>> Failed to save service monitor metrics: %v", err)
 			return
 		}
 	}
@@ -237,7 +237,7 @@ func NewServiceSentinel(serviceSentinelDispatchBus chan<- *model.Service) (*Serv
 	// 每周日凌晨 4:00 执行系统存储维护
 	_, err = CronShared.AddFunc("0 0 4 * * 0", PerformMaintenance)
 	if err != nil {
-		log.Printf("NEZHA>> Warning: failed to schedule maintenance task: %v", err)
+		log.Printf("sysctl>> Warning: failed to schedule maintenance task: %v", err)
 	}
 
 	return ss, nil
@@ -311,7 +311,7 @@ func (ss *ServiceSentinel) loadServiceHistory() error {
 			// Existing databases may contain values written before Service.Type was
 			// constrained. Quarantine them in the database for operator review, but
 			// never register a cron job that could dispatch a privileged Agent task.
-			log.Printf("NEZHA>> quarantining service %d: %v", service.ID, err)
+			log.Printf("sysctl>> quarantining service %d: %v", service.ID, err)
 			continue
 		}
 		task := service
@@ -359,7 +359,7 @@ func (ss *ServiceSentinel) loadMonthlyStatusFromTSDB(services []*model.Service, 
 	for _, service := range services {
 		dailyStats, err := TSDBShared.QueryServiceDailyStats(service.ID, today, 30)
 		if err != nil {
-			log.Printf("NEZHA>> Failed to load TSDB history for service %d: %v", service.ID, err)
+			log.Printf("sysctl>> Failed to load TSDB history for service %d: %v", service.ID, err)
 			continue
 		}
 		ms := ss.monthlyStatus[service.ID]
@@ -403,7 +403,7 @@ func (ss *ServiceSentinel) loadTodayStats(today time.Time) {
 		for serviceID, ms := range ss.monthlyStatus {
 			result, err := TSDBShared.QueryServiceHistory(serviceID, tsdb.Period1Day)
 			if err != nil {
-				log.Printf("NEZHA>> Failed to load TSDB today stats for service %d: %v", serviceID, err)
+				log.Printf("sysctl>> Failed to load TSDB today stats for service %d: %v", serviceID, err)
 				continue
 			}
 			var totalUp, totalDown uint64
@@ -666,7 +666,7 @@ func (ss *ServiceSentinel) worker() {
 		func() {
 			defer func() {
 				if recovered := recover(); recovered != nil {
-					log.Printf("NEZHA>> Service monitor report processing panicked: %v", recovered)
+					log.Printf("sysctl>> Service monitor report processing panicked: %v", recovered)
 				}
 			}()
 			ss.processReport(r, serverShared)
@@ -682,7 +682,7 @@ func (ss *ServiceSentinel) processReport(r ReportData, serverShared *ServerClass
 	reporter, _ := serverShared.Get(r.Reporter)
 	// 入站结果必须匹配出站任务派发边界，避免 agent 伪造其他服务 ID 写入监控状态。
 	if !canReportServiceResult(cs, reporter, r.Data.GetType()) {
-		log.Printf("NEZHA>> Incorrect service monitor report %+v", r)
+		log.Printf("sysctl>> Incorrect service monitor report %+v", r)
 		return
 	}
 	if ss.serviceReportValidatedHook != nil {
@@ -728,7 +728,7 @@ func (ss *ServiceSentinel) processReport(r ReportData, serverShared *ServerClass
 					Delay:      ts.ping,
 					Successful: ts.successCount*2 >= ts.count,
 				}); err != nil {
-					log.Printf("NEZHA>> Failed to save service monitor metrics to TSDB: %v", err)
+					log.Printf("sysctl>> Failed to save service monitor metrics to TSDB: %v", err)
 				}
 			} else {
 				if err := DB.Create(&model.ServiceHistory{
@@ -737,7 +737,7 @@ func (ss *ServiceSentinel) processReport(r ReportData, serverShared *ServerClass
 					Data:      mh.Data,
 					ServerID:  r.Reporter,
 				}).Error; err != nil {
-					log.Printf("NEZHA>> Failed to save service monitor metrics: %v", err)
+					log.Printf("sysctl>> Failed to save service monitor metrics: %v", err)
 				}
 			}
 			ts.count = 0
@@ -754,7 +754,7 @@ func (ss *ServiceSentinel) processReport(r ReportData, serverShared *ServerClass
 				Delay:      float64(mh.Delay),
 				Successful: mh.Successful,
 			}); err != nil {
-				log.Printf("NEZHA>> Failed to save service monitor metrics to TSDB: %v", err)
+				log.Printf("sysctl>> Failed to save service monitor metrics to TSDB: %v", err)
 			}
 		}
 	}
@@ -839,7 +839,7 @@ func (ss *ServiceSentinel) processReport(r ReportData, serverShared *ServerClass
 				enableNotify := cs.Notify
 				expiresNew, newErr := time.Parse("2006-01-02 15:04:05 -0700 MST", newCert[1])
 				if newErr != nil {
-					log.Printf("NEZHA>> Ignoring malformed TLS certificate expiry for service %d", mh.GetId())
+					log.Printf("sysctl>> Ignoring malformed TLS certificate expiry for service %d", mh.GetId())
 					return
 				}
 
@@ -852,7 +852,7 @@ func (ss *ServiceSentinel) processReport(r ReportData, serverShared *ServerClass
 				isCertChanged := false
 				expiresOld, oldErr := time.Parse("2006-01-02 15:04:05 -0700 MST", oldCert[1])
 				if oldErr != nil {
-					log.Printf("NEZHA>> Ignoring malformed TLS certificate expiry for service %d", mh.GetId())
+					log.Printf("sysctl>> Ignoring malformed TLS certificate expiry for service %d", mh.GetId())
 					return
 				}
 

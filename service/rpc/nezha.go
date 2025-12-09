@@ -119,7 +119,7 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 	for {
 		result, err = stream.Recv()
 		if err != nil {
-			log.Printf("NEZHA>> RequestTask error: %v, clientID: %d\n", err, clientID)
+			log.Printf("sysctl>> RequestTask error: %v, clientID: %d\n", err, clientID)
 			return err
 		}
 		server, err = currentRequestTaskServer(clientID, stream)
@@ -168,14 +168,14 @@ func (s *NezhaHandler) RequestTask(stream pb.NezhaService_RequestTaskServer) err
 			}
 			pending, ok := singleton.ServerTransferShared.LookupPending(clientID)
 			if !ok || pending.ID != result.GetId() {
-				log.Printf("NEZHA>> ServerTransferApply result ignored: clientID=%d reported transferID=%d but no matching pending transfer", clientID, result.GetId())
+				log.Printf("sysctl>> ServerTransferApply result ignored: clientID=%d reported transferID=%d but no matching pending transfer", clientID, result.GetId())
 				continue
 			}
 			if result.GetSuccessful() {
 				continue
 			}
 			if _, err := singleton.ServerTransferShared.MarkFailed(result.GetId(), result.GetData()); err != nil {
-				log.Printf("NEZHA>> ServerTransfer MarkFailed(%d) failed: %v", result.GetId(), err)
+				log.Printf("sysctl>> ServerTransfer MarkFailed(%d) failed: %v", result.GetId(), err)
 			}
 		default:
 			if model.IsMCPRPCResult(result.GetType()) {
@@ -208,7 +208,7 @@ func (s *NezhaHandler) ReportSystemState(stream pb.NezhaService_ReportSystemStat
 	for {
 		state, err = stream.Recv()
 		if err != nil {
-			log.Printf("NEZHA>> ReportSystemState error: %v, clientID: %d\n", err, clientID)
+			log.Printf("sysctl>> ReportSystemState error: %v, clientID: %d\n", err, clientID)
 			return err
 		}
 		stateCount++
@@ -250,7 +250,7 @@ func (s *NezhaHandler) ReportSystemState(stream pb.NezhaService_ReportSystemStat
 					Uptime:         innerState.Uptime,
 					GPU:            maxGPU,
 				}); err != nil {
-					log.Printf("NEZHA>> Failed to write server metrics to TSDB: %v", err)
+					log.Printf("sysctl>> Failed to write server metrics to TSDB: %v", err)
 				}
 			}
 			return nil

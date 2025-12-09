@@ -103,9 +103,9 @@ func InitDBFromPath(path string) error {
 	// 静默扩到 REST nezha:server:write。统一命名后这里把残留旧 scope 一次性
 	// 归一化（或在仅剩危险旧 scope 时整张 PAT 删除），保证运行时不再依赖别名。
 	if rewritten, deleted, mErr := model.MigrateLegacyMCPScopes(DB); mErr != nil {
-		log.Printf("NEZHA>> MigrateLegacyMCPScopes failed: %v", mErr)
+		log.Printf("sysctl>> MigrateLegacyMCPScopes failed: %v", mErr)
 	} else if rewritten > 0 || deleted > 0 {
-		log.Printf("NEZHA>> Migrated legacy mcp:* api token scopes: rewritten=%d deleted=%d", rewritten, deleted)
+		log.Printf("sysctl>> Migrated legacy mcp:* api token scopes: rewritten=%d deleted=%d", rewritten, deleted)
 	}
 
 	return nil
@@ -141,7 +141,7 @@ func RecordTransferHourlyUsage(servers ...*model.Server) {
 	if len(txs) == 0 {
 		return
 	}
-	log.Printf("NEZHA>> Saved traffic metrics to database. Affected %d row(s), Error: %v", len(txs), DB.Create(txs).Error)
+	log.Printf("sysctl>> Saved traffic metrics to database. Affected %d row(s), Error: %v", len(txs), DB.Create(txs).Error)
 }
 
 func PersistTransfer(transfer model.Transfer) error {
@@ -161,7 +161,7 @@ func CleanMonitorHistory() {
 	var specialServerIDs []uint64
 	var alerts []model.AlertRule
 	if err := DB.Find(&alerts).Error; err != nil {
-		log.Printf("NEZHA>> Failed to load alert rules while cleaning transfer history: %v", err)
+		log.Printf("sysctl>> Failed to load alert rules while cleaning transfer history: %v", err)
 		return
 	}
 	for _, alert := range alerts {
@@ -208,15 +208,15 @@ func CleanMonitorHistory() {
 
 // PerformMaintenance 执行系统维护（SQLite VACUUM 和 TSDB 维护）
 func PerformMaintenance() {
-	log.Println("NEZHA>> Starting system maintenance...")
+	log.Println("sysctl>> Starting system maintenance...")
 
 	// 1. SQLite 维护
 	if DB != nil {
-		log.Println("NEZHA>> SQLite: Starting VACUUM...")
+		log.Println("sysctl>> SQLite: Starting VACUUM...")
 		if err := DB.Exec("VACUUM").Error; err != nil {
-			log.Printf("NEZHA>> SQLite: VACUUM failed: %v", err)
+			log.Printf("sysctl>> SQLite: VACUUM failed: %v", err)
 		} else {
-			log.Println("NEZHA>> SQLite: VACUUM completed")
+			log.Println("sysctl>> SQLite: VACUUM completed")
 		}
 	}
 
@@ -225,7 +225,7 @@ func PerformMaintenance() {
 		TSDBShared.Maintenance()
 	}
 
-	log.Println("NEZHA>> System maintenance completed")
+	log.Println("sysctl>> System maintenance completed")
 }
 
 // IPDesensitize 根据设置选择是否对IP进行打码处理 返回处理后的IP(关闭打码则返回原IP)

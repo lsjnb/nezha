@@ -189,14 +189,14 @@ func AlertSentinelStart() {
 	}
 	for _, alert := range Alerts {
 		if alert == nil {
-			log.Printf("NEZHA>> Skipping invalid nil alert rule loaded from database")
+			log.Printf("sysctl>> Skipping invalid nil alert rule loaded from database")
 			continue
 		}
 		alertsStore[alert.ID] = make(map[uint64][]model.TimedAlertPoint)
 		alertsPrevState[alert.ID] = make(map[uint64]uint8)
 		alertsLastMetricSeq[alert.ID] = make(map[uint64]uint64)
 		if !alert.IsSafeToEvaluate() {
-			log.Printf("NEZHA>> Skipping invalid alert rule %d loaded from database", alert.ID)
+			log.Printf("sysctl>> Skipping invalid alert rule %d loaded from database", alert.ID)
 			continue
 		}
 		addCycleTransferStatsInfo(alert)
@@ -212,7 +212,7 @@ func AlertSentinelStart() {
 		checkCount++
 		if lastPrint.Before(startedAt.Add(-1 * time.Hour)) {
 			if Conf.Debug {
-				log.Printf("NEZHA>> Checking alert rules %d times each hour %v %v", checkCount, startedAt, time.Now())
+				log.Printf("sysctl>> Checking alert rules %d times each hour %v %v", checkCount, startedAt, time.Now())
 			}
 			checkCount = 0
 			lastPrint = startedAt
@@ -299,7 +299,7 @@ func checkStatus() {
 func checkStatusForServer(alert *model.AlertRule, server *model.Server) {
 	defer func() {
 		if recovered := recover(); recovered != nil {
-			log.Printf("NEZHA>> Recovered panic evaluating alert rule %d for server %d: %v", alert.ID, server.ID, recovered)
+			log.Printf("sysctl>> Recovered panic evaluating alert rule %d for server %d: %v", alert.ID, server.ID, recovered)
 		}
 	}()
 

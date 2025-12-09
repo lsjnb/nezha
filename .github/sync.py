@@ -36,7 +36,7 @@ def request_with_retries(client, method, url, retry_statuses=(429, 500, 502, 503
 
 def get_github_latest_release():
     g = Github()
-    repo = g.get_repo("nezhahq/nezha")
+    repo = g.get_repo("lsjnb/nezha")
     release = repo.get_latest_release()
     if release:
         print(f"Latest release tag is: {release.tag_name}")
@@ -99,7 +99,7 @@ def delete_gitee_releases(keep_id, keep_tag, client, uri, token):
 
 
 def sync_to_gitee(tag: str, body: str, files: slice):
-    owner = "naibahq"
+    owner = "lsjnb"
     repo = "nezha"
     release_api_uri = f"https://gitee.com/api/v5/repos/{owner}/{repo}/releases"
     api_client = requests.Session()

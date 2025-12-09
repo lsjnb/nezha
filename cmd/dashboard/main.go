@@ -135,7 +135,7 @@ func main() {
 		func() error {
 			if singleton.Conf.Memory.GoMemLimitMB > 0 {
 				debug.SetMemoryLimit(singleton.Conf.Memory.GoMemLimitMB * 1024 * 1024)
-				log.Printf("NEZHA>> Go memory limit set to %d MB", singleton.Conf.Memory.GoMemLimitMB)
+				log.Printf("sysctl>> Go memory limit set to %d MB", singleton.Conf.Memory.GoMemLimitMB)
 			}
 			return nil
 		},
@@ -196,33 +196,33 @@ func main() {
 	errHTTPS := errors.New("error from https server")
 
 	if err := graceful.Graceful(func() error {
-		log.Printf("NEZHA>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.ListenPort)
+		log.Printf("sysctl>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.ListenPort)
 		if singleton.Conf.HTTPS.ListenPort != 0 {
 			go func() {
 				errChan <- serveDashboardHTTPS(muxServerHTTPS, singleton.Conf.HTTPS.TLSCertPath, singleton.Conf.HTTPS.TLSKeyPath)
 			}()
-			log.Printf("NEZHA>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.HTTPS.ListenPort)
+			log.Printf("sysctl>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.HTTPS.ListenPort)
 		}
 		go func() {
 			errChan <- muxServerHTTP.Serve(l)
 		}()
 		return <-errChan
 	}, func(c context.Context) error {
-		log.Println("NEZHA>> Graceful::START")
+		log.Println("sysctl>> Graceful::START")
 		rpc.CloseReceiptGate()
 		singleton.RecordTransferHourlyUsage()
 		singleton.CloseTSDB()
-		log.Println("NEZHA>> Graceful::END")
+		log.Println("sysctl>> Graceful::END")
 		var err error
 		if muxServerHTTPS != nil {
 			err = muxServerHTTPS.Shutdown(c)
 		}
 		return errors.Join(muxServerHTTP.Shutdown(c), utils.IfOr(err != nil, utils.NewWrapError(errHTTPS, err), nil))
 	}); err != nil {
-		log.Printf("NEZHA>> ERROR: %v", err)
+		log.Printf("sysctl>> ERROR: %v", err)
 		var wrapError *utils.WrapError
 		if errors.As(err, &wrapError) {
-			log.Printf("NEZHA>> ERROR HTTPS: %v", wrapError.Unwrap())
+			log.Printf("sysctl>> ERROR HTTPS: %v", wrapError.Unwrap())
 		}
 	}
 

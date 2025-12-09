@@ -47,18 +47,18 @@ func (provider *Provider) UpdateDomain(ctx context.Context, overrideDomains ...s
 			if soaErr == nil {
 				break
 			}
-			log.Printf("NEZHA>> Failed to split domain SOA for %s (attempt %d/%d): %v", domain, retries+1, maxRetries, soaErr)
+			log.Printf("sysctl>> Failed to split domain SOA for %s (attempt %d/%d): %v", domain, retries+1, maxRetries, soaErr)
 		}
 
 		if soaErr != nil {
-			log.Printf("NEZHA>> Failed to split domain SOA for %s after %d retries, skipping domain", domain, maxRetries)
+			log.Printf("sysctl>> Failed to split domain SOA for %s after %d retries, skipping domain", domain, maxRetries)
 			continue
 		}
 
 		// 独立处理 IPv4 更新或删除
 		if provider.DDNSProfile.EnableIPv4 != nil && *provider.DDNSProfile.EnableIPv4 {
 			for retries := 0; retries < maxRetries; retries++ {
-				log.Printf("NEZHA>> Updating IPv4 record of domain %s: %d/%d", domain, retries+1, maxRetries)
+				log.Printf("sysctl>> Updating IPv4 record of domain %s: %d/%d", domain, retries+1, maxRetries)
 				var ipv4Err error
 				if provider.IPAddrs.IPv4Addr == "" {
 					ipv4Err = provider.deleteDomainRecord(ctx, prefix, zone, "A")
@@ -67,9 +67,9 @@ func (provider *Provider) UpdateDomain(ctx context.Context, overrideDomains ...s
 				}
 
 				if ipv4Err != nil {
-					log.Printf("NEZHA>> Failed to update IPv4 record of domain %s: %v", domain, ipv4Err)
+					log.Printf("sysctl>> Failed to update IPv4 record of domain %s: %v", domain, ipv4Err)
 				} else {
-					log.Printf("NEZHA>> Update IPv4 record of domain %s succeeded", domain)
+					log.Printf("sysctl>> Update IPv4 record of domain %s succeeded", domain)
 					break
 				}
 			}
@@ -78,7 +78,7 @@ func (provider *Provider) UpdateDomain(ctx context.Context, overrideDomains ...s
 		// 独立处理 IPv6 更新或删除
 		if provider.DDNSProfile.EnableIPv6 != nil && *provider.DDNSProfile.EnableIPv6 {
 			for retries := 0; retries < maxRetries; retries++ {
-				log.Printf("NEZHA>> Updating IPv6 record of domain %s: %d/%d", domain, retries+1, maxRetries)
+				log.Printf("sysctl>> Updating IPv6 record of domain %s: %d/%d", domain, retries+1, maxRetries)
 				var ipv6Err error
 				if provider.IPAddrs.IPv6Addr == "" {
 					ipv6Err = provider.deleteDomainRecord(ctx, prefix, zone, "AAAA")
@@ -87,9 +87,9 @@ func (provider *Provider) UpdateDomain(ctx context.Context, overrideDomains ...s
 				}
 
 				if ipv6Err != nil {
-					log.Printf("NEZHA>> Failed to update IPv6 record of domain %s: %v", domain, ipv6Err)
+					log.Printf("sysctl>> Failed to update IPv6 record of domain %s: %v", domain, ipv6Err)
 				} else {
-					log.Printf("NEZHA>> Update IPv6 record of domain %s succeeded", domain)
+					log.Printf("sysctl>> Update IPv6 record of domain %s succeeded", domain)
 					break
 				}
 			}
@@ -117,7 +117,7 @@ func (provider *Provider) addDomainRecord(ctx context.Context, prefix, zone, rec
 func (provider *Provider) deleteDomainRecord(ctx context.Context, prefix, zone, recType string) error {
 	deleter, okDeleter := provider.Setter.(libdns.RecordDeleter)
 	if !okDeleter {
-		log.Printf("NEZHA>> DNS provider does not support RecordDeleter, safely skipping deletion for %s", recType)
+		log.Printf("sysctl>> DNS provider does not support RecordDeleter, safely skipping deletion for %s", recType)
 		return nil
 	}
 
@@ -132,7 +132,7 @@ func (provider *Provider) deleteDomainRecord(ctx context.Context, prefix, zone, 
 		return fmt.Errorf("deleter.DeleteRecords failed: %w", err)
 	}
 
-	log.Printf("NEZHA>> Successfully deleted %s record for %s.%s", recType, prefix, zone)
+	log.Printf("sysctl>> Successfully deleted %s record for %s.%s", recType, prefix, zone)
 	return nil
 }
 
