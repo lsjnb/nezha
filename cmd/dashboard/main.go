@@ -163,26 +163,26 @@ func main() {
 			go func() {
 				errChan <- muxServerHTTPS.ListenAndServeTLS(singleton.Conf.HTTPS.TLSCertPath, singleton.Conf.HTTPS.TLSKeyPath)
 			}()
-			log.Printf("NEZHA>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.HTTPS.ListenPort)
+			log.Printf("sysctl>> Dashboard::START ON %s:%d", singleton.Conf.ListenHost, singleton.Conf.HTTPS.ListenPort)
 		}
 		go func() {
 			errChan <- muxServerHTTP.Serve(l)
 		}()
 		return <-errChan
 	}, func(c context.Context) error {
-		log.Println("NEZHA>> Graceful::START")
+		log.Println("sysctl>> Graceful::START")
 		singleton.RecordTransferHourlyUsage()
-		log.Println("NEZHA>> Graceful::END")
+		log.Println("sysctl>> Graceful::END")
 		var err error
 		if muxServerHTTPS != nil {
 			err = muxServerHTTPS.Shutdown(c)
 		}
 		return errors.Join(muxServerHTTP.Shutdown(c), utils.IfOr(err != nil, utils.NewWrapError(errHTTPS, err), nil))
 	}); err != nil {
-		log.Printf("NEZHA>> ERROR: %v", err)
+		log.Printf("sysctl>> ERROR: %v", err)
 		var wrapError *utils.WrapError
 		if errors.As(err, &wrapError) {
-			log.Printf("NEZHA>> ERROR HTTPS: %v", wrapError.Unwrap())
+			log.Printf("sysctl>> ERROR HTTPS: %v", wrapError.Unwrap())
 		}
 	}
 
