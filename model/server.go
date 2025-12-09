@@ -60,7 +60,7 @@ func (s *Server) CopyFromRunningServer(old *Server) {
 func (s *Server) AfterFind(tx *gorm.DB) error {
 	if s.DDNSProfilesRaw != "" {
 		if err := json.Unmarshal([]byte(s.DDNSProfilesRaw), &s.DDNSProfiles); err != nil {
-			log.Println("NEZHA>> Server.AfterFind:", err)
+			log.Println("sysctl>> Server.AfterFind:", err)
 			return nil
 		}
 	}

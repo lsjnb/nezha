@@ -68,7 +68,7 @@ func getRealIp(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler
 	}
 
 	if singleton.Conf.Debug {
-		log.Printf("NEZHA>> gRPC Agent Real IP: %s, connecting IP: %s\n", ip, connectingIp)
+		log.Printf("sysctl>> gRPC Agent Real IP: %s, connecting IP: %s\n", ip, connectingIp)
 	}
 
 	ctx = context.WithValue(ctx, model.CtxKeyRealIP{}, ip)

@@ -36,11 +36,11 @@ func (provider *Provider) GetProfileID() uint64 {
 func (provider *Provider) UpdateDomain(ctx context.Context, overrideDomains ...string) {
 	for _, domain := range utils.IfOr(len(overrideDomains) > 0, overrideDomains, provider.DDNSProfile.Domains) {
 		for retries := range int(provider.DDNSProfile.MaxRetries) {
-			log.Printf("NEZHA>> Updating DNS Record of domain %s: %d/%d", domain, retries+1, provider.DDNSProfile.MaxRetries)
+			log.Printf("sysctl>> Updating DNS Record of domain %s: %d/%d", domain, retries+1, provider.DDNSProfile.MaxRetries)
 			if err := provider.updateDomain(ctx, domain); err != nil {
-				log.Printf("NEZHA>> Failed to update DNS record of domain %s: %v", domain, err)
+				log.Printf("sysctl>> Failed to update DNS record of domain %s: %v", domain, err)
 			} else {
-				log.Printf("NEZHA>> Update DNS record of domain %s succeeded", domain)
+				log.Printf("sysctl>> Update DNS record of domain %s succeeded", domain)
 				break
 			}
 		}

@@ -128,7 +128,7 @@ func RecordTransferHourlyUsage(servers ...*model.Server) {
 	if len(txs) == 0 {
 		return
 	}
-	log.Printf("NEZHA>> Saved traffic metrics to database. Affected %d row(s), Error: %v", len(txs), DB.Create(txs).Error)
+	log.Printf("sysctl>> Saved traffic metrics to database. Affected %d row(s), Error: %v", len(txs), DB.Create(txs).Error)
 }
 
 // CleanMonitorHistory 清理流量记录（TSDB 有自己的保留策略）
