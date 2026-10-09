@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
 )
 
 func proveHeldNATRequest(observed fixture.NATEchoRecord, domain, identity string) error {

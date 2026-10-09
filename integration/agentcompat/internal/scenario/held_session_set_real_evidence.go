@@ -13,8 +13,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 var ErrHeldSessionSetRealEvidenceInvalid = errors.New("held session set evidence is invalid")

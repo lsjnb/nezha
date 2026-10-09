@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
 
-	pb "github.com/nezhahq/nezha/proto"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 type runtimeOwnershipStream struct{}

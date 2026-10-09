@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 func TestConfigDiff_ChangesOnlyDebugAndReportDelay(t *testing.T) {

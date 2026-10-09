@@ -1,6 +1,6 @@
 package singleton
 
-import "github.com/nezhahq/nezha/model"
+import "github.com/lsjnb/nezha/model"
 
 // NewEmptyServerClassForTest 构造一个不依赖 DB 的空 ServerClass，仅用于单测。
 // 生产路径请用 NewServerClass。

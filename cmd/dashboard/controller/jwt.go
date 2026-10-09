@@ -12,11 +12,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/cmd/dashboard/controller/waf"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/idcodec"
-	"github.com/nezhahq/nezha/pkg/utils"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/cmd/dashboard/controller/waf"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/idcodec"
+	"github.com/lsjnb/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 const (

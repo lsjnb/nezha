@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // fs.upload_url 必须把 agent 已经支持的上传语义（mode / create_dirs /

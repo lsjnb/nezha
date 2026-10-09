@@ -3,7 +3,7 @@ package workflowpolicy_test
 import (
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workflowpolicy"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workflowpolicy"
 )
 
 func TestPolicy_RejectsAdversarialExecutionForms(t *testing.T) {

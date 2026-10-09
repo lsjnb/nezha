@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 )
 
 const (

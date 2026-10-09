@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
 )
 
 var (

@@ -15,8 +15,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/model"
-	pb "github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/model"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 // fakeTaskStream is the smallest stub of pb.NezhaService_RequestTaskServer

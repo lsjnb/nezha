@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 	"github.com/stretchr/testify/require"
 )
 

@@ -12,10 +12,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/testpaths"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/testpaths"
 )
 
 func TestAgent_BecomesOnlineOverH2C(t *testing.T) {

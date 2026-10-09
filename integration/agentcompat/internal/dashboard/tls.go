@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
 )
 
 func (dashboard *Dashboard) verifyTrustedTLS(ctx context.Context) error {

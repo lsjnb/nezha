@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
 )
 
 type permissionAgentContract struct {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 func makeStreamTestServers() []*model.Server {

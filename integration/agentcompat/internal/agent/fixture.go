@@ -9,7 +9,7 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 )
 
 func agentBuildSpec(sourceDir string) workspace.BuildSpec {

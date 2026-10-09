@@ -8,11 +8,11 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/hashicorp/go-uuid"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/websocketx"
-	"github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/rpc"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/websocketx"
+	"github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/rpc"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // The official file-manager client uploads in 1 MiB WebSocket messages. Cap

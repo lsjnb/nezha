@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 type fdDiagnosticAgentWindow struct {

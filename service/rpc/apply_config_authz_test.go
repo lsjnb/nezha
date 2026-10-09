@@ -11,9 +11,9 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/model"
-	pb "github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	pb "github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // A malicious or buggy agent owning server A must NOT be able to fail a

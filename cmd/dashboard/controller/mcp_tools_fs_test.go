@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // fs.* 跨租户拒绝测试：member token 调 fs.list/read/write/delete 时，如果

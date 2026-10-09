@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
 )
 
 func TestStressFilesystemUsesAgentPAT(t *testing.T) {

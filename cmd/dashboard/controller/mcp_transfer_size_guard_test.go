@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // M3 regression: a malicious or corrupt agent can put `> MaxInt64` into the

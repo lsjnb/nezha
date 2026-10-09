@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 func newCronListPATRouter(t *testing.T, tok *model.APIToken) *gin.Engine {

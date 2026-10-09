@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nezhahq/nezha/cmd/dashboard/rpc"
+	"github.com/lsjnb/nezha/cmd/dashboard/rpc"
 )
 
 // TestWireNATDashboardCredentialGate pins the NAT ingress wiring contract:

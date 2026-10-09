@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
 )
 
 func terminalServerID(ctx context.Context, mcpClient *client.Client, uuid string) (uint64, error) {

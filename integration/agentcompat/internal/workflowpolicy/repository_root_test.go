@@ -11,7 +11,7 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-const nezhaModulePath = "github.com/nezhahq/nezha"
+const nezhaModulePath = "github.com/lsjnb/nezha"
 
 func TestRepositoryRoot_FindsModuleAcrossLineEndings(t *testing.T) {
 	tests := []struct {
@@ -92,7 +92,7 @@ func TestRepositoryRoot_ReturnsUsefulErrorAtFilesystemRoot(t *testing.T) {
 	// Then
 	require.Empty(t, actualRoot)
 	require.Error(t, err)
-	require.ErrorContains(t, err, "repository root containing module \"github.com/nezhahq/nezha\" was not found")
+	require.ErrorContains(t, err, "repository root containing module \"github.com/lsjnb/nezha\" was not found")
 	require.ErrorContains(t, err, windowsRoot)
 	require.Equal(t, 1, parentCalls)
 }

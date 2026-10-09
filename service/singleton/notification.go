@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/utils"
 )
 
 const (

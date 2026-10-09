@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 )
 
 type PreparedBinaryUsageError struct {

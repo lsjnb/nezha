@@ -17,10 +17,10 @@ import (
 	"github.com/jinzhu/copier"
 	"golang.org/x/exp/constraints"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/tsdb"
-	"github.com/nezhahq/nezha/pkg/utils"
-	pb "github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/tsdb"
+	"github.com/lsjnb/nezha/pkg/utils"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 const (

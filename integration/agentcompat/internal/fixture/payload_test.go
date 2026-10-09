@@ -9,7 +9,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
 )
 
 func TestFixture_StreamsExact100MiB(t *testing.T) {

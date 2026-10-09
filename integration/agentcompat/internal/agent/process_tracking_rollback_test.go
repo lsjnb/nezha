@@ -14,7 +14,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 )
 
 func TestAgent_StartProcess_tracksStartedGenerationForStop(t *testing.T) {

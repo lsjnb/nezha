@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
 )
 
 func validateDedicatedArtifact(files evidenceSnapshot, metadata Metadata, result ScenarioResult) error {

@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
-	serviceRPC "github.com/nezhahq/nezha/service/rpc"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
+	serviceRPC "github.com/lsjnb/nezha/service/rpc"
 )
 
 func TestPrepareNATCapabilityConsumesAndRemovesHeaderBeforeNATWork(t *testing.T) {

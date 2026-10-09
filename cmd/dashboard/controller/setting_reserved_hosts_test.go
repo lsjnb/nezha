@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // GHSA-x6fg-52vr-hj4w: the admin settings endpoint must accept reserved_hosts

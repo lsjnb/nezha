@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/scenario"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/scenario"
 )
 
 func TestCLI_ParsesTypedFlagsAndWritesMetadata(t *testing.T) {

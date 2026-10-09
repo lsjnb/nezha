@@ -19,14 +19,14 @@ import (
 	"github.com/ory/graceful"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/nezhahq/nezha/cmd/dashboard/controller"
-	"github.com/nezhahq/nezha/cmd/dashboard/controller/waf"
-	"github.com/nezhahq/nezha/cmd/dashboard/rpc"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/idcodec"
-	"github.com/nezhahq/nezha/pkg/utils"
-	"github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/cmd/dashboard/controller"
+	"github.com/lsjnb/nezha/cmd/dashboard/controller/waf"
+	"github.com/lsjnb/nezha/cmd/dashboard/rpc"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/idcodec"
+	"github.com/lsjnb/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 type DashboardCliParam struct {

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/model"
-	pb "github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/model"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 // Kill switch must beat a late agent reply. Without the cancelled-flag

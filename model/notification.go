@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/goccy/go-json"
-	"github.com/nezhahq/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/pkg/utils"
 )
 
 const (

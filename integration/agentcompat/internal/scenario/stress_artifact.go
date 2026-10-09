@@ -11,8 +11,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 var ErrStressArtifactInvalid = errors.New("stress artifact is invalid")

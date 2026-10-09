@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 func TestFDDiagnosticCollector_StartsOverlappingTailsInOrdinalOrder(t *testing.T) {

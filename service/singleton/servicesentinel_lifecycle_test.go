@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // Regression markers for Finding 1 and Finding 2 of GHSA-jx78-55p5-rwv5

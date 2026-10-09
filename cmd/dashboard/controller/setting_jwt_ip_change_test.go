@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 func TestSettingForm_AllowJWTIPChangePreservesAbsentAndDecodesExplicitValues(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 func TestServiceSentinelUpdateRejectsNonProbeTaskTypes(t *testing.T) {

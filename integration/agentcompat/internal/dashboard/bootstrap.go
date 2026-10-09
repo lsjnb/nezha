@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
 )
 
 type patRequest struct {

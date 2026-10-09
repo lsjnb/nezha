@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/scenario"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/scenario"
 )
 
 type scenarioExecutionOutput struct {

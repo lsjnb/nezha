@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
 )
 
 type CommonResponse[T any] struct {

@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 func runContext(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer, now time.Time) error {

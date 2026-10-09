@@ -5,9 +5,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/nezhahq/nezha/proto"
-	rpcService "github.com/nezhahq/nezha/service/rpc"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/proto"
+	rpcService "github.com/lsjnb/nezha/service/rpc"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func SetReceiptGateListener(listener net.Listener) {

@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
 )
 
 type heldNATRequest struct {

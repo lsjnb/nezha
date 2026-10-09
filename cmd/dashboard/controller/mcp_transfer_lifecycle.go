@@ -10,10 +10,10 @@ import (
 
 	"github.com/hashicorp/go-uuid"
 
-	"github.com/nezhahq/nezha/model"
-	pb "github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/rpc"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	pb "github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/rpc"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // openFsTransferStream owns the task-to-agent IOStream lifecycle. The returned

@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/jinzhu/copier"
-	"github.com/nezhahq/nezha/pkg/tsdb"
+	"github.com/lsjnb/nezha/pkg/tsdb"
 
-	"github.com/nezhahq/nezha/model"
-	pb "github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	pb "github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 var _ pb.NezhaServiceServer = (*NezhaHandler)(nil)

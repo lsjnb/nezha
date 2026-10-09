@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 type scenarioFlags []contract.Scenario

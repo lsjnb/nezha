@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
 )
 
 type heldNATConstructorFault struct {

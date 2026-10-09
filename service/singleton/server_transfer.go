@@ -14,9 +14,9 @@ import (
 	"golang.org/x/mod/semver"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
-	pb "github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/utils"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 // transferHandshakeSecretLength matches model.DefaultAgentSecretLength so

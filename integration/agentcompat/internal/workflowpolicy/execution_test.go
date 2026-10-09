@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workflowpolicy"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workflowpolicy"
 	"github.com/stretchr/testify/require"
 )
 

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/testpaths"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/testpaths"
 	"github.com/stretchr/testify/require"
 )
 

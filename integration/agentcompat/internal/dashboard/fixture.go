@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 )
 
 func (dashboard *Dashboard) prepareFixture(ctx context.Context, config StartConfig) error {

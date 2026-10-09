@@ -11,11 +11,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 func TestStressPRFullEightAgentExactlyOnce(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
 )
 
 var ErrStressSoakTrend = errors.New("stress soak RSS increases strictly across all iterations")

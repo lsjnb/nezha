@@ -15,7 +15,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"sigs.k8s.io/yaml"
 
-	"github.com/nezhahq/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/pkg/utils"
 )
 
 // JWTSecretEnvKey is the canonical environment variable that injects the JWT

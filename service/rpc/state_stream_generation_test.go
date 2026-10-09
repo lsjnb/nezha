@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/tsdb"
-	pb "github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/tsdb"
+	pb "github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func TestReportSystemState_HandlerWaitsForMetricsBeforeReceipt(t *testing.T) {

@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
 )
 
 func realHeldSessionSetAgentOrdinals(plan StressPlan) []int {

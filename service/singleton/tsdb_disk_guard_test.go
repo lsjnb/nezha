@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/tsdb"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/tsdb"
 )
 
 func TestInitTSDBContinuesWhenDiskIsFull(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func DispatchTask(serviceSentinelDispatchBus <-chan *model.Service) {

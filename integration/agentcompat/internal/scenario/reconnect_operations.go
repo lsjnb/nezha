@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
+	"github.com/lsjnb/nezha/model"
 )
 
 type reconnectExecArguments struct {

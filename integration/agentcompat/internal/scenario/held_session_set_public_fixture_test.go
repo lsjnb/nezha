@@ -8,10 +8,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
 )
 
 type heldSessionSetPublicFixture struct {

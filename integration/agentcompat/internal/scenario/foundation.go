@@ -8,7 +8,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 var ErrConfigIdentityChanged = errors.New("scenario: config identity changed")

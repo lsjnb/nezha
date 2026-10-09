@@ -2,7 +2,7 @@
 
 package scenario
 
-import "github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
+import "github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
 
 func reconnectReceiptSummary(pairs ...[]dashboard.MCPReceiptPair) (taskIDs, resultIDs []uint64, duplicates, lost int) {
 	seen := make(map[uint64]struct{})

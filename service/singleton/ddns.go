@@ -10,11 +10,11 @@ import (
 	"github.com/libdns/he"
 	tencentcloud "github.com/nezhahq/libdns-tencentcloud"
 
-	"github.com/nezhahq/nezha/model"
-	ddns2 "github.com/nezhahq/nezha/pkg/ddns"
-	"github.com/nezhahq/nezha/pkg/ddns/dummy"
-	"github.com/nezhahq/nezha/pkg/ddns/webhook"
-	"github.com/nezhahq/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/model"
+	ddns2 "github.com/lsjnb/nezha/pkg/ddns"
+	"github.com/lsjnb/nezha/pkg/ddns/dummy"
+	"github.com/lsjnb/nezha/pkg/ddns/webhook"
+	"github.com/lsjnb/nezha/pkg/utils"
 )
 
 type DDNSClass struct {

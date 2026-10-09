@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/evidence"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/evidence"
 )
 
 func TestCLI_FailedGenerationRemovesPriorEvidence(t *testing.T) {

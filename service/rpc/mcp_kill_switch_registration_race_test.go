@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // Registration-after-sweep race (review issue #1): CancelAllMCPInflight only

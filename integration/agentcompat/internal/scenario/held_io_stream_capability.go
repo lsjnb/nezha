@@ -7,7 +7,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
 )
 
 type heldIOStreamCapabilityIdentity struct {

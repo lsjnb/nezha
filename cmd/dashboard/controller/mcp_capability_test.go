@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // 旧 agent 不识别 TaskTypeExec/TaskTypeFs* 等新 task type，会走 default

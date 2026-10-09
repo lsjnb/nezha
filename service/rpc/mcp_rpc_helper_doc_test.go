@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	pb "github.com/nezhahq/nezha/proto"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 // 把"测试 helper 的注释与运行时语义"钉成测试，避免 helper 文档骗读者：

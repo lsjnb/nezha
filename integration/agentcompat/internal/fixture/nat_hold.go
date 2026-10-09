@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
 )
 
 type NATHoldBackend struct {

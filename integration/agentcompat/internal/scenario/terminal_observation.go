@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
 )
 
 var terminalSizePattern = regexp.MustCompile(`compat-size=([0-9]+) ([0-9]+)`)

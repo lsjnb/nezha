@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 	"github.com/stretchr/testify/require"
 )
 

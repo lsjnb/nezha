@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 const workspaceListenerHelperEnv = "GO_WANT_WORKSPACE_LISTENER_HELPER"

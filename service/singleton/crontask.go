@@ -12,9 +12,9 @@ import (
 
 	"github.com/robfig/cron/v3"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
-	pb "github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/utils"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 const alertTriggerCronResultAuthorizationTTL = 24 * time.Hour

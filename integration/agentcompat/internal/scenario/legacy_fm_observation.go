@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 type legacyFMResidueProbe struct {

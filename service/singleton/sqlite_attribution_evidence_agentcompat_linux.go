@@ -131,7 +131,7 @@ func sqliteAttributionOrigin() SQLiteExecutionOrigin {
 	programCounters = programCounters[:count]
 	frames := runtime.CallersFrames(programCounters)
 	frame, more := frames.Next()
-	for more && !strings.Contains(frame.Function, "github.com/nezhahq/nezha/") {
+	for more && !strings.Contains(frame.Function, "github.com/lsjnb/nezha/") {
 		frame, more = frames.Next()
 	}
 	return SQLiteExecutionOrigin{StackHash: sqliteAttributionStackHash(programCounters), FirstNezhaFrame: frame.Function}

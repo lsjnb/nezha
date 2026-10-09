@@ -9,11 +9,11 @@ import (
 	"github.com/goccy/go-json"
 
 	"github.com/hashicorp/go-uuid"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
-	"github.com/nezhahq/nezha/proto"
-	serviceRPC "github.com/nezhahq/nezha/service/rpc"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/proto"
+	serviceRPC "github.com/lsjnb/nezha/service/rpc"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func ServeNAT(w http.ResponseWriter, r *http.Request, natConfig *model.NAT) {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
 )
 
 func TestHeldReadinessValidation_AcceptsCompleteEvidenceForActualAgent(t *testing.T) {

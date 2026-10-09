@@ -12,7 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 const agentcompatSQLiteHoldPath = "/agentcompat/sqlite-hold/"

@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
 	"github.com/stretchr/testify/require"
 )
 

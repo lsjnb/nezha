@@ -11,7 +11,7 @@ import (
 
 	"github.com/patrickmn/go-cache"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 func TestNotificationFailureDoesNotMuteRetryOrResendSuccessfulRecipient(t *testing.T) {

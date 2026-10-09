@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 )
 
 // Values standing in for the credentials this dashboard issues. The fake

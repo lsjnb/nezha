@@ -22,9 +22,9 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/testpaths"
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/testpaths"
+	"github.com/lsjnb/nezha/model"
 )
 
 func TestDashboard_BootstrapsSQLiteLoginPATAndMCP(t *testing.T) {

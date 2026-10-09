@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/i18n"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/i18n"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func setupCronUpdateOwnerUIDFixture(t *testing.T) {

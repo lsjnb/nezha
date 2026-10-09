@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/nezhahq/nezha/proto"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 func TestServiceWindowCountsFirstFailureAsDown(t *testing.T) {

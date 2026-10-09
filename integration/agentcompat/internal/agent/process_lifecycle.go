@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 type ProcessIdentity struct {

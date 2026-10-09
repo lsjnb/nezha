@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/fixture"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/fixture"
 )
 
 type natRawResponse struct {

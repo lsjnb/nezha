@@ -12,7 +12,7 @@ import (
 	"github.com/goccy/go-json"
 	"gorm.io/gorm"
 
-	pb "github.com/nezhahq/nezha/proto"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 var runtimeHolderInitMu sync.Mutex

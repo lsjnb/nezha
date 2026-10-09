@@ -10,8 +10,8 @@ import (
 	"gorm.io/gorm/logger"
 
 	ginjwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // dashboardCredentialJWTParser verifies that a JWT was signed by this

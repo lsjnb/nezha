@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 var upgrader *websocket.Upgrader

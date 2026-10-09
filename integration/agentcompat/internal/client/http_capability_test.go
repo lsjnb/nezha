@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
 	"github.com/stretchr/testify/require"
 )
 

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 type StreamPurpose uint8

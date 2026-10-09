@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 const fdDiagnosticTailSampleCount = 20

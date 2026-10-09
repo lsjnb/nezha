@@ -3,7 +3,7 @@ package evidence
 import (
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
 )
 
 func TestEvidence_DedicatedArtifactsRequireExactScenarioAssertions(t *testing.T) {

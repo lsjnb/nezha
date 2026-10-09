@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/agent"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/agent"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 type ReconnectFixtureEvidence struct {

@@ -5,8 +5,8 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
-	"github.com/nezhahq/nezha/service/rpc"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
+	"github.com/lsjnb/nezha/service/rpc"
 )
 
 type agentcompatCapabilityHeaderContextKey struct{}

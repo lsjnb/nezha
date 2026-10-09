@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/model"
+	"github.com/lsjnb/nezha/model"
 	"gorm.io/gorm"
 )
 

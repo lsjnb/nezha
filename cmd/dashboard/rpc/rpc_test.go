@@ -7,8 +7,8 @@ import (
 
 	"google.golang.org/grpc/peer"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // peerCtx builds a context carrying a gRPC peer address the same way the

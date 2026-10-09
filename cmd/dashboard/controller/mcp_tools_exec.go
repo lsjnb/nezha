@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/service/rpc"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/service/rpc"
 )
 
 // server.exec — 非交互一次性命令。

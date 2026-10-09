@@ -17,8 +17,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/service/rpc"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/service/rpc"
 )
 
 func TestAgentcompatIOStreamStateRoutesRequirePATAndReturnTypedState(t *testing.T) {

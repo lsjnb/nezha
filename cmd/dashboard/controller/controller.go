@@ -18,11 +18,11 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/nezhahq/nezha/cmd/dashboard/controller/waf"
-	docs "github.com/nezhahq/nezha/cmd/dashboard/docs"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/utils"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/cmd/dashboard/controller/waf"
+	docs "github.com/lsjnb/nezha/cmd/dashboard/docs"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func ServeWeb(frontendDist fs.FS) http.Handler {

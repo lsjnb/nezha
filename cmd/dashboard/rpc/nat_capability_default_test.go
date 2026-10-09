@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/agentcompatcontract"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/agentcompatcontract"
 )
 
 func TestPrepareNATCapabilityDefaultPreservesHeaderAsOrdinaryRequestData(t *testing.T) {

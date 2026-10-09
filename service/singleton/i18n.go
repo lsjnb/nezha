@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/nezhahq/nezha/pkg/i18n"
+	"github.com/lsjnb/nezha/pkg/i18n"
 )
 
 const domain = "nezha"

@@ -11,9 +11,9 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/i18n"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/i18n"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // 通用租户隔离测试夹具：在 in-memory DB 上挂载所需 model 并塞两个用户，

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
 )
 
 func TestCLI_MetadataCancellationRemovesTemporaryArtifact(t *testing.T) {

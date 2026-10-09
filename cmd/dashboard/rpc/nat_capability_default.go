@@ -5,8 +5,8 @@ package rpc
 import (
 	"net/http"
 
-	"github.com/nezhahq/nezha/model"
-	serviceRPC "github.com/nezhahq/nezha/service/rpc"
+	"github.com/lsjnb/nezha/model"
+	serviceRPC "github.com/lsjnb/nezha/service/rpc"
 )
 
 type natCapabilityLease struct {

@@ -16,11 +16,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/nezhahq/nezha/cmd/dashboard/rpc"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/proto"
-	rpcService "github.com/nezhahq/nezha/service/rpc"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/cmd/dashboard/rpc"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/proto"
+	rpcService "github.com/lsjnb/nezha/service/rpc"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // setupNATFlowTest extends setupDashboardCredentialTest with the minimal

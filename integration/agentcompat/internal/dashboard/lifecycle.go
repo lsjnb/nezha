@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/client"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/client"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
 )
 
 func (dashboard *Dashboard) StopProcess(ctx context.Context) (RuntimeIdentity, error) {

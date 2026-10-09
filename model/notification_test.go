@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nezhahq/nezha/pkg/utils"
+	"github.com/lsjnb/nezha/pkg/utils"
 )
 
 var (

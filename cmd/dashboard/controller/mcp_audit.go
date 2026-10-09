@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 // mcpAuditWrite 异步写一条 MCP 审计日志。失败仅 log，不阻塞业务。

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/goccy/go-json"
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/proto"
 )
 
 func TestServeNATClosesHijackedResourcesWhenStreamDisappearsBeforeUserTransfer(t *testing.T) {

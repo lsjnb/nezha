@@ -6,10 +6,10 @@ import (
 	"log"
 	"net"
 
-	"github.com/nezhahq/nezha/model"
-	geoipx "github.com/nezhahq/nezha/pkg/geoip"
-	pb "github.com/nezhahq/nezha/proto"
-	"github.com/nezhahq/nezha/service/singleton"
+	"github.com/lsjnb/nezha/model"
+	geoipx "github.com/lsjnb/nezha/pkg/geoip"
+	pb "github.com/lsjnb/nezha/proto"
+	"github.com/lsjnb/nezha/service/singleton"
 )
 
 func (s *NezhaHandler) ReportGeoIP(ctx context.Context, report *pb.GeoIP) (*pb.GeoIP, error) {

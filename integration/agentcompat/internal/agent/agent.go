@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/dashboard"
-	processharness "github.com/nezhahq/nezha/integration/agentcompat/internal/process"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/workspace"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/dashboard"
+	processharness "github.com/lsjnb/nezha/integration/agentcompat/internal/process"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/workspace"
 )
 
 const (

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/contract"
-	"github.com/nezhahq/nezha/integration/agentcompat/internal/scenario"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/contract"
+	"github.com/lsjnb/nezha/integration/agentcompat/internal/scenario"
 )
 
 func TestCLI_RegisteredScenariosHaveExhaustiveRuntimeRouting(t *testing.T) {

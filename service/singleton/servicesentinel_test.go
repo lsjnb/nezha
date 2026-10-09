@@ -11,8 +11,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/nezhahq/nezha/model"
-	"github.com/nezhahq/nezha/pkg/tsdb"
+	"github.com/lsjnb/nezha/model"
+	"github.com/lsjnb/nezha/pkg/tsdb"
 )
 
 func newTestSentinel(serviceIDs []uint64) *ServiceSentinel {

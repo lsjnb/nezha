@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/nezhahq/nezha/pkg/grpcx"
-	pb "github.com/nezhahq/nezha/proto"
+	"github.com/lsjnb/nezha/pkg/grpcx"
+	pb "github.com/lsjnb/nezha/proto"
 )
 
 func (s *NezhaHandler) IOStream(stream pb.NezhaService_IOStreamServer) error {
